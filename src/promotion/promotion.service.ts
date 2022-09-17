@@ -68,7 +68,7 @@ export class PromotionService {
     }
   }
 
-  async remove(id: number, user: User) : Promise<Promotion> {
+  async remove(id: number) : Promise<Promotion> {
     try {
       const promo = await this.promotionRepository.findOneOrFail({
         where: {
@@ -78,9 +78,7 @@ export class PromotionService {
           user: true,
         }
       });
-      if (user.id === promo.user.id)
-        return await this.promotionRepository.remove(promo);
-      throw new ForbiddenException();
+      return await this.promotionRepository.remove(promo);
 
     } catch {
       throw new BadRequestException('promotion dosent exist');

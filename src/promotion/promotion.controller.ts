@@ -5,6 +5,10 @@ import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RequestWithAuth } from 'src/types';
 import { JWTGuard } from 'src/auth/guardes/jwt.guard';
+import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
+import { Actions } from 'src/casl/casl-ability.factory';
+import { Promotion } from './entities/promotion.entity';
+import { AbilitiesGuards } from 'src/casl/guards/abilies.guard';
 
 @ApiTags('Promotions')
 @ApiBearerAuth()
@@ -35,7 +39,9 @@ export class PromotionController {
   }
 
   @Delete(':id')
+  @UseGuards(AbilitiesGuards)
+  @CheckAbilities({ actions: Actions.Delete, subjects: Promotion })
   remove(@Req() req: RequestWithAuth,@Param('id', ParseIntPipe) id: number) {
-    return this.promotionService.remove(id, req.user);
+    return this.promotionService.remove(id);
   }
 }
