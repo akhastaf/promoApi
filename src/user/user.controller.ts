@@ -15,26 +15,26 @@ export class UserController {
 
   @Post()
   create(@Req() req: RequestWithAuth ,@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto, req.user);
+    return this.userService.create(createUserDto);
   }
   @UseGuards(JWTGuard)
   @Get()
   findAll(@Req() req: RequestWithAuth ,) {
-    return this.userService.findAll(req.user);
+    return this.userService.findAll();
   }
 
   @Get(':id')
   findOne(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(id, req.user);
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
   update(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto, req.user);
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
-    return this.userService.remove(id, req.user);
+    return this.userService.remove(id);
   }
 }

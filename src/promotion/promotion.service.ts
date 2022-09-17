@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -16,7 +16,7 @@ export class PromotionService {
   }
 
   async findAll(user: User) : Promise<Promotion[]> {
-    if (user.isAdmin)
+    if (user.role === UserRole.ADMIN)
       return await this.promotionRepository.find();
     return await this.promotionRepository.find({
       where: {
@@ -40,7 +40,7 @@ export class PromotionService {
             user: true,
           }
         });
-        if (user.isAdmin || promotion.user.id === user.id)
+        if (user.role === UserRole.ADMIN || promotion.user.id === user.id)
           return promotion;
         throw new ForbiddenException();
     } catch {

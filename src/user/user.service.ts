@@ -3,24 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Customer } from 'src/customer/entities/customer.entity';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private userRepository : Repository<User>,) {}
-  async create(createUserDto: CreateUserDto, user: User): Promise<any> {
-    if (!user.isAdmin)
-      throw new UnauthorizedException();
+  async create(createUserDto: CreateUserDto): Promise<any> {
+    /* if (user.role != UserRole.ADMIN)
+      throw  new UnauthorizedException();*/
     const newuser: User = this.userRepository.create(createUserDto);
-    return await this.userRepository.save(user);
+    return await this.userRepository.save(newuser);
   }
 
-  async findAll(user: User): Promise<User[]> {
-    console.log(user);
-    if (!user.isAdmin)
-      throw new UnauthorizedException();
+  async findAll(): Promise<User[]> {
+   /*  if (user.role != UserRole.ADMIN)
+      throw new UnauthorizedException(); */
     return await this.userRepository.find({
       relations: {
         promotions: true,
@@ -30,9 +28,9 @@ export class UserService {
     
   }
 
-  async findOne(id: number, user: User): Promise<User> {
-    if (!user.isAdmin || user.id != id)
-      throw new UnauthorizedException();
+  async findOne(id: number): Promise<User> {
+    /* if (user.role != UserRole.ADMIN || user.id != id)
+      throw new UnauthorizedException(); */
     try {
       const userTofind = await this.userRepository.findOneOrFail({
         where: {
@@ -48,9 +46,9 @@ export class UserService {
     }
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto, user: User) : Promise<UpdateResult> {
-    if (!user.isAdmin || user.id != id)
-      throw new UnauthorizedException();
+  async update(id: number, updateUserDto: UpdateUserDto) : Promise<UpdateResult> {
+    /* if (user.role != UserRole.ADMIN || user.id != id)
+      throw new UnauthorizedException(); */
     try {
       const userToupdate = await this.userRepository.findOneOrFail({
         where: {
@@ -66,10 +64,10 @@ export class UserService {
     }
   }
 
-  async remove(id: number, user: User) : Promise<User> {
-    if (!user.isAdmin)
-      throw new UnauthorizedException();
-    const userToremove = await this.findOne(id, user);
+  async remove(id: number) : Promise<User> {
+   /*  if (user.role != UserRole.ADMIN)
+      throw new UnauthorizedException(); */
+    const userToremove = await this.findOne(id);
     return this.userRepository.remove(userToremove);
   }
 

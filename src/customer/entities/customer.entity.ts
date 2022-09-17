@@ -1,4 +1,4 @@
-import { User } from "src/user/entities/user.entity";
+/* import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
@@ -26,3 +26,4 @@ export class Customer {
     @UpdateDateColumn()
     updatedAt: Date;
 }
+ */

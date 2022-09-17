@@ -1,21 +1,19 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
-import { JWTGuard, JWTGuardForCustomer } from 'src/auth/guardes/jwt.guard';
+import { JWTGuard } from 'src/auth/guardes/jwt.guard';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
-import { RequestWithAuth, RequestWithCustomer } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Customer } from './entities/customer.entity';
 
 @ApiTags('Customers')
 @Controller('customers')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
   
-  @Post()
+ /*  @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto) {
     return await this.customerService.create(createCustomerDto);
   }
@@ -46,7 +44,7 @@ export class CustomerController {
   @Post('join/:id')
   async join(@Req() req: RequestWithCustomer, @Param('id', ParseIntPipe) id: number): Promise<Customer> {
     return this.customerService.join(id, req.user);
-  }
+  } */
   
   // @UseGuards(JWTGuardForCustomer)
   // @Get('promotion')

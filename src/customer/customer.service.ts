@@ -3,20 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
+import { PromotionService } from 'src/promotion/promotion.service';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Customer } from './entities/customer.entity';
 
 @Injectable()
 export class CustomerService {
-  constructor(private userService: UserService,
-              private jwtService: JwtService,
-              @InjectRepository(Customer) private customerRepository: Repository<Customer>,
-              @InjectRepository(Promotion) private promotionRepository: Repository<Promotion>,) {}
-  async create(createCustomerDto: CreateCustomerDto) : Promise<any> {
+  constructor(private userService: UserService, 
+              private promotionServivce: PromotionService) {}
+  /* async create(createCustomerDto: CreateCustomerDto) : Promise<any> {
     const user = await this.userService.findOneById(createCustomerDto.userId);
     if (user)
     {
@@ -153,7 +151,7 @@ export class CustomerService {
       },
     });
     return customer;
-  }
+  } */
 
 
 

@@ -1,8 +1,15 @@
 import { Promotion } from "src/promotion/entities/promotion.entity";
 import { BeforeInsert, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
-import { Customer } from "src/customer/entities/customer.entity";
 import { Exclude } from "class-transformer";
+
+export enum UserRole {
+    ADMIN='ADMIN',
+    MODERATOR='MODERATOR',
+    MANAGER='MANAGER',
+    CUSTOMER='CUSTOMER'
+}
+
 
 @Entity()
 export class User {
@@ -19,19 +26,28 @@ export class User {
     @Column()
     @Exclude()
     password: string;
-    @Column({ default: false})
-    isAdmin: boolean;
     @Column({ default: '/user_default.png'})
     avatar: string;
-    @CreateDateColumn()
-    
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.CUSTOMER
+    })
+    role: string;
+    @Column({ nullable: true })
+    phone: string;
+    @Column({ nullable: true })
+    address: string;
+
     @OneToMany(() => Promotion, (promotion) => promotion.user)
     promotions?: Promotion[];
-    @ManyToMany(() => Customer, (customer) => customer.users)
+    @ManyToMany(() => User)
     @JoinTable()
-    customers?: Customer[];
+    customers?: User[];
     
     
+    
+    @CreateDateColumn()
     createdAt: Date; 
     @UpdateDateColumn()
     updatedAt: Date;

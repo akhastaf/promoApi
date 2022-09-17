@@ -7,6 +7,7 @@ import { Promotion } from './entities/promotion.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Promotion])],
   controllers: [PromotionController],
-  providers: [PromotionService]
+  providers: [PromotionService],
+  exports: [PromotionService]
 })
 export class PromotionModule {}
