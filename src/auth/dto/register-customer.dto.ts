@@ -7,15 +7,7 @@ export class RegisterCustomerDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    first_name: string;
-    @ApiProperty()
-    @IsString()
-    @IsOptional()
-    middel_name?: string;
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    last_name: string;
+    name: string;
     @ApiProperty()
     @IsEmail()
     email: string;
@@ -24,7 +16,9 @@ export class RegisterCustomerDto {
     phone: string;
     @ApiProperty()
     @IsString()
-    adderres: string;
+    @IsOptional()
+    @IsOptional()
+    adderres?: string;
     @ApiProperty()
     @IsString()
     // @IsNotEmpty()
@@ -42,5 +36,6 @@ export class RegisterCustomerDto {
     @ApiProperty()
     @IsString()
     @IsEnum(UserRole)
-    role: string;
+    @IsOptional()
+    role?: string;
 }

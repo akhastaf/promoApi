@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository, UpdateResult } from 'typeorm';
@@ -83,5 +83,20 @@ export class PromotionService {
     } catch {
       throw new BadRequestException('promotion dosent exist');
     }
+  }
+
+  async getPromotionsForCustomer(customer: User): Promise<Promotion[]> {
+    return await this.promotionRepository.find({
+      where: {
+        user: {
+          customers: {
+            id: customer.id
+          }
+        }
+      },
+      relations: {
+        user: true,
+      }
+    });
   }
 }

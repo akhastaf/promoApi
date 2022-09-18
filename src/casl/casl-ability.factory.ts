@@ -8,6 +8,7 @@ export enum Actions {
     Manage = 'manage',
     Create = 'create',
     Read = 'read',
+    ReadOne = 'readOne',
     Upadate = 'update', 
     Delete = 'delete'
 }
@@ -27,14 +28,16 @@ export class CaslAbilityFactory {
         } else if (user.role === UserRole.MODERATOR) {
             can(Actions.Create, User);
             can(Actions.Read, User);
+            can(Actions.ReadOne, User, { role: { $eq : UserRole.MANAGER }});
+            //cannot(Actions.ReadOne, User, { role: UserRole.ADMIN}).because('you are not admin');
         }
         else if (user.role === UserRole.MANAGER) {
             can(Actions.Manage, Promotion, { user: { id: user.id}})
-            //can(Actions.Read, User, { customers: { id: user.id}})
+            //can(Actions.Read, User, { managers: { $in: user}})
         }
         else if (user.role === UserRole.CUSTOMER) {
             can(Actions.Manage, User, { id: { $eq: user.id} });
-            //can(Actions.Read, Promotion, { })
+            //±can(Actions.Read, Promotion, { })
         }
 
         return build({

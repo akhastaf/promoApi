@@ -5,26 +5,38 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserRole } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { RegisterCustomerDto } from 'src/auth/dto/register-customer.dto';
+import { PromotionService } from 'src/promotion/promotion.service';
+import { Promotion } from 'src/promotion/entities/promotion.entity';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private userRepository : Repository<User>,) {}
-  async create(createUserDto: CreateUserDto): Promise<any> {
+  constructor(private promotionServivce: PromotionService,
+            @InjectRepository(User) private userRepository : Repository<User>,) {}
+  async create(createUserDto: CreateUserDto | RegisterCustomerDto): Promise<any> {
     /* if (user.role != UserRole.ADMIN)
       throw  new UnauthorizedException();*/
     const newuser: User = this.userRepository.create(createUserDto);
     return await this.userRepository.save(newuser);
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(user: User): Promise<User[]> {
    /*  if (user.role != UserRole.ADMIN)
       throw new UnauthorizedException(); */
+    if (user.role === UserRole.ADMIN)
+      return await this.userRepository.find({
+        relations: {
+          promotions: true,
+        }
+      });
     return await this.userRepository.find({
+      where: {
+        role: UserRole.MANAGER,
+      },
       relations: {
         promotions: true,
       }
     });
-
     
   }
 
@@ -90,14 +102,17 @@ export class UserService {
         relations: {
           promotions: true,
           customers: true,
+          managers: true,
         },
       });
       return user;
   }
-  async findOneById(id: number) : Promise<User> {
-      const user = await this.userRepository.findOne({
+  async findOneById(id: number, role?: any) : Promise<User> {
+    try {
+      const user = await this.userRepository.findOneOrFail({
         where: {
           id,
+          role: role
         },
         relations: {
           promotions: true,
@@ -105,5 +120,58 @@ export class UserService {
         },
       });
       return user;
+    } catch (error) {
+      throw new NotFoundException('user not found');
+    }
+  }
+
+  // Customer
+  async join(id: number, user: User) {
+    try {
+      const manager = await this.userRepository.findOneOrFail({
+        where: {
+          id: id,
+          role: UserRole.MANAGER
+        },
+        relations: {
+          customers: true,
+          managers: true,
+          promotions: true,
+        }
+      })
+      user.managers = [manager, ...user.managers];
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
+  async getPromotions(user: User): Promise<Promotion[]> {
+    return await this.promotionServivce.getPromotionsForCustomer(user);
+  }
+
+  async getManagers(user: User): Promise<User[]> {
+    return await this.userRepository.find({
+      where: {
+        customers: {
+          id: user.id,
+        }
+      },
+      relations: {
+        promotions:true,
+      }
+    });
+  }
+  // Manager
+  async getAllCustomers(manager: User): Promise<User[]> {
+    return await this.userRepository.find({
+      where: {
+        customers: {
+          managers: {
+            id: manager.id,
+          },
+        },
+      }
+    });
   }
 }

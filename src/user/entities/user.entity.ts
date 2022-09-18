@@ -16,11 +16,7 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
     @Column()
-    first_name: string;
-    @Column({ nullable: true })
-    middle_name: string;
-    @Column()
-    last_name: string;
+    name: string;
     @Column({ unique: true })
     email: string;
     @Column()
@@ -41,9 +37,11 @@ export class User {
 
     @OneToMany(() => Promotion, (promotion) => promotion.user)
     promotions?: Promotion[];
-    @ManyToMany(() => User)
-    @JoinTable()
+    @ManyToMany(() => User, (customer) => customer.managers)
     customers?: User[];
+    @ManyToMany(() => User, (manager) => manager.customers)
+    @JoinTable()
+    managers?: User[];
     
     
     

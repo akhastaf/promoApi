@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
+import { Contains, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
 import { Settings } from "http2";
 import { Match } from "../decorators/match.decorator";
 import { UserRole } from "../entities/user.entity";
@@ -8,15 +8,7 @@ export class CreateUserDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    first_name: string;
-    @ApiProperty()
-    @IsString()
-    @IsOptional()
-    middel_name?: string;
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    last_name: string;
+    name: string;
     @ApiProperty()
     @IsEmail()
     email: string;
@@ -42,6 +34,7 @@ export class CreateUserDto {
     password_confirmation: string;
     @ApiProperty()
     @IsString()
+    @Contains(UserRole.MANAGER)
     @IsEnum(UserRole)
     role: string;
 }

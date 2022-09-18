@@ -5,7 +5,6 @@ import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
-import { CustomerService } from 'src/customer/customer.service';
 import { RegisterCustomerDto } from './dto/register-customer.dto';
 
 @Injectable()
@@ -14,7 +13,6 @@ export class AuthService {
 
     constructor (private configService: ConfigService,
             private userService: UserService,
-            private customerService: CustomerService,
             private jwtService: JwtService
         ) {}
 
