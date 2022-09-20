@@ -1,7 +1,7 @@
 import { ForbiddenError } from "@casl/ability";
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common"
 import { Reflector } from "@nestjs/core";
-import { CaslAbilityFactory } from "../casl-ability.factory";
+import { AppAbility, CaslAbilityFactory} from "../casl-ability.factory";
 import { CHECK_ABILITY, RequiredRule } from "../decorators/abilities.decorator";
 
 @Injectable()
@@ -18,9 +18,11 @@ export class AbilitiesGuards implements CanActivate {
 
 
         try {
-            rules.forEach((rule) =>
-                ForbiddenError.from(ability).throwUnlessCan(rule.actions, rule.subjects),
-            );
+            rules.forEach((rule) => {
+                console.log(ability.can(rule.actions, rule.subjects));
+                console.log(rule.actions, ' sub : ', rule.subjects);
+                ForbiddenError.from(ability).throwUnlessCan(rule.actions, rule.subjects);
+            });
 
             return true;
         } catch (error) {
@@ -29,5 +31,4 @@ export class AbilitiesGuards implements CanActivate {
         }
 
     }
-    
 }

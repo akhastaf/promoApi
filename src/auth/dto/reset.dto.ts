@@ -1,31 +1,30 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Matches, Max, Min } from "class-validator";
 import { Match } from "src/user/decorators/match.decorator";
-import { UserRole } from "src/user/entities/user.entity";
 
-export class RegisterCustomerDto {
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    name: string;
+export class ResetDTO {
     @ApiProperty()
     @IsEmail()
     email: string;
-    @ApiProperty()
-    @IsPhoneNumber()
-    phone: string;
     @ApiProperty()
     @IsString()
     // @IsNotEmpty()
     // @Min(8)
     // @Max(20)
     // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
-    password: string;
+    old_password: string;
     @ApiProperty()
     @IsString()
     // @IsNotEmpty()
     // @Min(8)
     // @Max(20)
-    @Match("password", {message: 'repeat password must be idenitcal to password'})
+    // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
+    new_password: string;
+    @ApiProperty()
+    @IsString()
+    // @IsNotEmpty()
+    // @Min(8)
+    // @Max(20)
+    @Match("new_password", {message: 'repeat password must be idenitcal to password'})
     password_confirmation: string;
 }

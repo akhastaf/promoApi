@@ -10,6 +10,11 @@ export enum UserRole {
     CUSTOMER='CUSTOMER'
 }
 
+export enum Language {
+    ENGLISH='en',
+    FRENCH='fr',
+}
+
 
 @Entity()
 export class User {
@@ -26,6 +31,12 @@ export class User {
     avatar: string;
     @Column({
         type: 'enum',
+        enum: Language,
+        default: Language.ENGLISH
+    })
+    language: string;
+    @Column({
+        type: 'enum',
         enum: UserRole,
         default: UserRole.CUSTOMER
     })
@@ -34,12 +45,14 @@ export class User {
     phone: string;
     @Column({ nullable: true })
     address: string;
-
-    @OneToMany(() => Promotion, (promotion) => promotion.user)
+    @Exclude()
+    @Column({ nullable: true })
+    token: string;
+    @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];
-    @ManyToMany(() => User, (customer) => customer.managers)
+    @ManyToMany(() => User, (customer) => customer.managers, { onDelete: 'SET NULL' } )
     customers?: User[];
-    @ManyToMany(() => User, (manager) => manager.customers)
+    @ManyToMany(() => User, (manager) => manager.customers, { onDelete: 'SET NULL' } )
     @JoinTable()
     managers?: User[];
     

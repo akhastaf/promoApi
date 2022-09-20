@@ -10,13 +10,14 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor (private configService: ConfigService, private userService: UserService) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
+            ignoreExpiration: true,
             secretOrKey: configService.get('JWT_SECRET'),
         });
     }
 
     async validate(payload: AuthPayload) {
         const user = await this.userService.findOneByEmail(payload.email);
+        console.log(user);
         return user;
     }
 }

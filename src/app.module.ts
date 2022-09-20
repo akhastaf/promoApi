@@ -7,10 +7,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmAsyncConfig } from './config/typeorm.config';
 import { CaslModule } from './casl/casl.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { I18nJsonLoader, I18nModule } from 'nestjs-i18n';
 import { join } from 'path';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
+            // I18nModule.forRoot({
+            //   fallbackLanguage: 'en',
+            //   loaderOptions: {
+            //     path: join(__dirname, '/i18n'),
+            //     watch: true,
+            //   },
+            //   loader: I18nJsonLoader
+            // }),
             ServeStaticModule.forRoot({
               rootPath: join(__dirname, '..', 'client'),
             }),
@@ -18,7 +28,8 @@ import { join } from 'path';
             AuthModule,
             UserModule,
             PromotionModule,
-            CaslModule
+            CaslModule,
+            MailModule
             ],
   controllers: [],
   providers: [],

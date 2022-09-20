@@ -21,19 +21,19 @@ export const Users = [
     {
         name: 'manager1',//process.env.ADMIN_FIRST_NAME,
         email: 'manager1@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'managaer',//process.env.ADMIN_PASSWORD
+        password: 'manager',//process.env.ADMIN_PASSWORD
         role: UserRole.MANAGER,
     },
     {
         name: 'manager2',//process.env.ADMIN_FIRST_NAME,
         email: 'manager2@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'managaer',//process.env.ADMIN_PASSWORD
+        password: 'manager',//process.env.ADMIN_PASSWORD
         role: UserRole.MANAGER,
     },
     {
         name: 'manager3',//process.env.ADMIN_FIRST_NAME,
         email: 'manager3@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'managaer',//process.env.ADMIN_PASSWORD
+        password: 'manager',//process.env.ADMIN_PASSWORD
         role: UserRole.MANAGER,
     },
     {

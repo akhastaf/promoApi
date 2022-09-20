@@ -5,13 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
 import { CaslModule } from 'src/casl/casl.module';
-import { CustomerService } from './customer.service';
 import { PromotionModule } from 'src/promotion/promotion.module';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Promotion]), CaslModule, PromotionModule],
+  imports: [TypeOrmModule.forFeature([User, Promotion]),ConfigModule, CaslModule, PromotionModule, JwtModule],
   controllers: [UserController],
-  providers: [UserService, CustomerService],
+  providers: [UserService],
   exports: [UserService]
 })
 export class UserModule {}
