@@ -1,15 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseIntPipe, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseIntPipe, ForbiddenException, UploadedFile, Query, DefaultValuePipe } from '@nestjs/common';
 import { PromotionService } from './promotion.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RequestWithAuth } from 'src/types';
 import { JWTGuard } from 'src/auth/guardes/jwt.guard';
-// import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
 import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Promotion } from './entities/promotion.entity';
-// import { AbilitiesGuards } from 'src/casl/guards/abilies.guard';
 import { ForbiddenError } from '@casl/ability';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SharpPipe } from './pipes/sharp.pipe';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @ApiTags('Promotions')
 @ApiBearerAuth()
@@ -20,20 +21,42 @@ export class PromotionController {
   constructor(private readonly promotionService: PromotionService,
               private readonly abilityFactory: CaslAbilityFactory) {}
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          format: 'string',
+        },
+        description: {
+          type: 'string',
+          format: 'string',
+        },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      }
+    }
+  })
+  @ApiConsumes('multipart/form-data')
   @Post()
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({actions: Actions.Create, subjects: Promotion})
-  create(@Req() req: RequestWithAuth,@Body() createPromotionDto: CreatePromotionDto) {
+  @UseInterceptors(FileInterceptor('image'))
+  create(@Req() req: RequestWithAuth, @UploadedFile(SharpPipe) image: string, @Body() createPromotionDto: CreatePromotionDto) {
+    createPromotionDto.image = image;
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.promotionService.create(createPromotionDto, req.user, ability);
   }
   
   @Get()
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({actions: Actions.Read, subjects: Promotion})
-  findAll(@Req() req: RequestWithAuth,) {
+  findAll(@Req() req: RequestWithAuth,
+          @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+          @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<Promotion>>
+  {
+    limit = limit > 100 ? 100 : limit;  
     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.promotionService.findAll(req.user, ability);
+    return this.promotionService.findAll(req.user, { limit, page }, ability);
   }
   
   @Get(':id')
@@ -42,17 +65,39 @@ export class PromotionController {
     return await this.promotionService.findOne(id, req.user, ability);
   }
   
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          format: 'string',
+        },
+        description: {
+          type: 'string',
+          format: 'string',
+        },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      }
+    }
+  })
+  @ApiConsumes('multipart/form-data')
   @Patch(':id')
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({actions: Actions.Upadate, subjects: Promotion})
-  async update(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number, @Body() updatePromotionDto: UpdatePromotionDto) {
+  @UseInterceptors(FileInterceptor('image'))
+  async update(@Req() req: RequestWithAuth,
+              @UploadedFile(SharpPipe) image: string,
+              @Param('id', ParseIntPipe) id: number,
+              @Body() updatePromotionDto: UpdatePromotionDto) {
+    if (image)
+      updatePromotionDto.image = image;
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.promotionService.update(id, updatePromotionDto, req.user, ability);
   }
       
   @Delete(':id')
-      // @UseGuards(AbilitiesGuards)
-      // @CheckAbilities({ actions: Actions.Delete, subjects: Promotion })
   remove(@Req() req: RequestWithAuth,@Param('id', ParseIntPipe) id: number) {
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.promotionService.remove(id, ability);

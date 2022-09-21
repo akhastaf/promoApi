@@ -23,7 +23,7 @@ export class CreateCustomerDto {
     phone: string;
     @ApiProperty()
     @IsString()
-    adderres: string;
+    address: string;
     @ApiProperty()
     @IsString()
     // @IsNotEmpty()

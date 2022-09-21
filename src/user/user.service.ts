@@ -14,6 +14,7 @@ import { ResetDTO } from 'src/auth/dto/reset.dto';
 import { ForbiddenError } from '@casl/ability';
 import { ConfigService } from '@nestjs/config';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
+import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 @Injectable()
 export class UserService {
   constructor(private promotionServivce: PromotionService,
@@ -24,33 +25,40 @@ export class UserService {
 
 
 
-  async create(createUserDto: CreateUserDto | RegisterCustomerDto, ability: AppAbility): Promise<any> {
+  async create(createUserDto: CreateUserDto | RegisterCustomerDto,
+              i18n: I18nContext,
+              ability?: AppAbility): Promise<any> {
     try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
+      if (ability)
+        ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
       const newuser: User = this.userRepository.create(createUserDto);
       return await this.userRepository.save(newuser);
     } catch (error) {
-      throw new ForbiddenException(error.message);
+      throw new ForbiddenException(await i18n.t('test.user.ERROR'));
     }
   }
   
-  async findAll(user: User, ability: AppAbility): Promise<User[]> {
+  async findAll(user: User,
+                option: IPaginationOptions,
+                ability: AppAbility): Promise<Pagination<User>> {
     try {
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User);
+      const qb = this.userRepository.createQueryBuilder('user');
       if (user.role === UserRole.ADMIN)
-      return await this.userRepository.find({
-        relations: {
-          promotions: true,
-        }
-      });
-      return await this.userRepository.find({
-        where: {
-          role: UserRole.MANAGER,
-        },
-        relations: {
-          promotions: true,
-        }
-      });
+        return await paginate<User>(this.userRepository, option);
+      if (user.role === UserRole.MODERATOR)
+        qb.where('user.role = :role', { role: UserRole.MANAGER });
+      if (user.role === UserRole.MANAGER) 
+      {
+        qb.leftJoin('user.managers', 'managers')
+          .where('managers.id = :id', { id: user.id});
+      }
+      if (user.role === UserRole.CUSTOMER) 
+      {
+        qb.leftJoin('user.customers', 'customers')
+          .where('customers.id = :id', { id: user.id});
+      }
+      return await paginate<User>(qb, option);
     } catch (error) {
       throw new ForbiddenException(error.message);
     }
@@ -108,17 +116,6 @@ export class UserService {
     }
   }
 
-  // async getUsersForCustomer(customer: Customer): Promise<User[]>{
-  //   const users = this.userRepository.find({
-  //     where: {
-  //       customers: {
-          
-  //       }
-  //     }
-  //   })
-    
-  // }
-
   async generateToken(email: string): Promise<User> {
     try {
       const user = await this.userRepository.findOneOrFail({
@@ -166,12 +163,7 @@ export class UserService {
       const user = await this.userRepository.findOne({
         where: {
           email: email,
-        },
-        relations: {
-          promotions: true,
-          customers: true,
-          managers: true,
-        },
+        }
       });
       return user;
   }
@@ -181,11 +173,7 @@ export class UserService {
         where: {
           id,
           role: role
-        },
-        relations: {
-          promotions: true,
-          customers: true,
-        },
+        }
       });
       return user;
     } catch (error) {
@@ -200,11 +188,6 @@ export class UserService {
         where: {
           id: id,
           role: UserRole.MANAGER
-        },
-        relations: {
-          customers: true,
-          managers: true,
-          promotions: true,
         }
       })
       ForbiddenError.from(ability).throwUnlessCan(Actions.Subscribe, manager);
@@ -223,11 +206,6 @@ export class UserService {
         where: {
           id: id,
           role: UserRole.MANAGER
-        },
-        relations: {
-          customers: true,
-          managers: true,
-          promotions: true,
         }
       })
       ForbiddenError.from(ability).throwUnlessCan(Actions.UnSubscribe, manager);
@@ -242,47 +220,6 @@ export class UserService {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);
       throw new NotFoundException();
-    }
-  }
-
-  async getPromotions(user: User, ability: AppAbility): Promise<Promotion[]> {
-    try {
-      return await this.promotionServivce.getPromotionsForCustomer(user, ability);
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
-  }
-
-  async getManagers(user: User, ability: AppAbility): Promise<User[]> {
-    try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User);
-      return await this.userRepository.find({
-        where: {
-          customers: {
-            id: user.id,
-          }
-        },
-        relations: {
-          promotions:true,
-        }
-      });
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
-  }
-  // Manager
-  async getAllCustomers(manager: User, ability: AppAbility): Promise<User[]> {
-    try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User);
-      return await this.userRepository.find({
-        where: {
-          managers: {
-              id: manager.id,
-          },
-        }
-      });
-    } catch (error) {
-      throw new ForbiddenException(error.message);
     }
   }
 }

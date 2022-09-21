@@ -50,7 +50,7 @@ export class User {
     token: string;
     @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];
-    @ManyToMany(() => User, (customer) => customer.managers, { onDelete: 'SET NULL' } )
+    @ManyToMany(() => User, (customer) => customer.managers, { onDelete: 'SET NULL' })
     customers?: User[];
     @ManyToMany(() => User, (manager) => manager.customers, { onDelete: 'SET NULL' } )
     @JoinTable()

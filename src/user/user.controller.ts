@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, UseGuards, Req, ParseIntPipe, UploadedFile, Query, DefaultValuePipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { RequestWithAuth } from 'src/types';
 import { JWTGuard } from 'src/auth/guardes/jwt.guard';
 import { AbilitiesGuards } from 'src/casl/guards/abilies.guard';
@@ -10,6 +10,9 @@ import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
 import { Actions, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
 import { User } from './entities/user.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SharpPipe } from 'src/promotion/pipes/sharp.pipe';
+import { Pagination } from 'nestjs-typeorm-paginate';
 import { I18n, I18nContext } from 'nestjs-i18n';
 
 @ApiTags('Users')
@@ -21,40 +24,110 @@ export class UserController {
   constructor(private readonly userService: UserService,
               private readonly abilityFactory: CaslAbilityFactory) {}
 
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({ actions: Actions.Create, subjects: User})
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          format: 'string',
+        },
+        email: {
+          type: 'string',
+          format: 'string',
+        },
+        phone: {
+          type: 'string',
+          format: 'string',
+        },
+        address: {
+          type: 'string',
+          format: 'string',
+        },
+        password: {
+          type: 'string',
+          format: 'string',
+        },
+        password_confirmation: {
+          type: 'string',
+          format: 'string',
+        },
+        role: {
+          type: 'string',
+          format: 'string',
+        },
+        avatar: {
+          type: 'string',
+          format: 'binary',
+        },
+      }
+    }
+  })
+  @ApiConsumes('multipart/form-data')
   @Post()
-  create(@Req() req: RequestWithAuth ,@Body() createUserDto: CreateUserDto) {
+  @UseInterceptors(FileInterceptor('avatar'))
+  create(@Req() req: RequestWithAuth,
+        @UploadedFile(SharpPipe) avatar: string,
+        @Body() createUserDto: CreateUserDto,
+        @I18n() i18n: I18nContext) {
+    if (avatar)
+          createUserDto.avatar = avatar;
     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.create(createUserDto, ability);
+    return this.userService.create(createUserDto, i18n, ability);
   }
-  
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({ actions: Actions.Read, subjects: User})
+
   @Get()
-  findAll(@Req() req: RequestWithAuth ,) {
+  findAll(@Req() req: RequestWithAuth,
+          @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+          @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<User>>
+  {
+    limit = limit > 100 ? 100 : limit;
     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.findAll(req.user, ability);
+    return this.userService.findAll(req.user, { limit, page } ,ability);
   }
   
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({ actions: Actions.ReadOne, subjects: User})
   @Get(':id')
   findOne(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.userService.findOne(id, ability);
   }
   
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({ actions: Actions.Upadate, subjects: User})
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          format: 'string',
+        },
+        phone: {
+          type: 'string',
+          format: 'string',
+        },
+        address: {
+          type: 'string',
+          format: 'string',
+        },
+        avatar: {
+          type: 'string',
+          format: 'binary',
+        },
+      }
+    }
+  })
+  @ApiConsumes('multipart/form-data')
   @Patch(':id')
-  update(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  @UseInterceptors(FileInterceptor('avatar'))
+  update(@Req() req: RequestWithAuth ,
+        @UploadedFile(SharpPipe) avatar: string,
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateUserDto: UpdateUserDto) {
+    if (avatar)
+      updateUserDto.avatar = avatar;
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.userService.update(id, updateUserDto, ability);
   }
   
-  // @UseGuards(AbilitiesGuards)
-  // @CheckAbilities({ actions: Actions.Delete, subjects: User})
   @Delete(':id')
   remove(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
     const ability = this.abilityFactory.defineAbility(req.user);
@@ -71,23 +144,5 @@ export class UserController {
   async unsubscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<any> {
     const ability = this.abilityFactory.defineAbility(req.user);
     return await this.userService.unsubscribe(id, req.user, ability);
-  }
-  
-  @Get('customer/promotions')
-  async getPromotions(@Req() req: RequestWithAuth): Promise<Promotion[]> {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.userService.getPromotions(req.user, ability);
-  }
-  @Get('customer/managers')
-  async getmanagers(@Req() req: RequestWithAuth): Promise<User[]> {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.userService.getManagers(req.user, ability);
-  }
-  
-  // Manager
-  @Get('manager/customers')
-  async getAllCustomers(@Req() req: RequestWithAuth) : Promise<User[]> {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.userService.getAllCustomers(req.user, ability);
   }
 }

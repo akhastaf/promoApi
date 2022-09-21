@@ -9,6 +9,7 @@ import { RegisterCustomerDto } from './dto/register-customer.dto';
 import { ResetDTO } from './dto/reset.dto';
 import { ForgetDto } from './dto/forget.dto';
 import { MailService } from 'src/mail/mailService';
+import { I18nContext } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -32,12 +33,29 @@ export class AuthService {
 
     login(user: User): any {
         const payload = { email: user.email, sub: user.id };
-        return { access_token: this.jwtService.sign(payload) };
+        return { access_token: this.jwtService.sign(payload),
+                refrsh_token: this.jwtService.sign(payload, {
+                    secret: this.configService.get('JWT_SECRET'),
+                    expiresIn: '3m'
+                }) };
     }
 
-    // async register(registerCustomerDto: RegisterCustomerDto) : Promise<User> {
-    //     return this.userService.create(registerCustomerDto);
-    // }
+    async getAccess_token(refrsh_token: string) {
+        try {
+            const payload = await this.jwtService.verifyAsync(refrsh_token, {
+                secret: this.configService.get('JWT_SECRET'),
+                ignoreExpiration: false
+            });
+            const user = await this.userService.findOneByEmail(payload.eamil);
+            return this.login(user);
+        } catch (error) {
+            throw new ForbiddenException(error.message);
+        }
+    }
+
+    async register(registerCustomerDto: RegisterCustomerDto, i18n : I18nContext) : Promise<User> {
+        return this.userService.create(registerCustomerDto ,i18n);
+    }
 
     async forget(forgetDto: ForgetDto) {
         try {

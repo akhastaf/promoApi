@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Param, Post, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, Param, Post, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -11,6 +11,7 @@ import { ForbiddenError } from '@casl/ability';
 import { ForgetDto } from './dto/forget.dto';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 @ApiTags('Auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -20,14 +21,24 @@ export class AuthController {
 
     @UseGuards(LocalGuard)
     @Post('login')
-    async login(@Req() req: RequestWithAuth ,@Body() loginUserDto: LoginUserDto) {
-        return { user: req.user, access_token: this.authService.login(req.user) };
+    async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
+        const tokens = this.authService.login(req.user);
+        res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true });
+        res.send({ user: req.user, access_token: tokens.access_token });
+        return { user: req.user, access_token: tokens.access_token };
     }
 
-    // @Post('register')
-    // async register(@Body() registerCustomerDto: RegisterCustomerDto): Promise<User> {
-    //     return await this.authService.register(registerCustomerDto);
-    // }
+    @Post('register')
+    async register(@Body() registerCustomerDto: RegisterCustomerDto, @I18n() i18n: I18nContext): Promise<User> {
+        return await this.authService.register(registerCustomerDto, i18n);
+    }
+
+    @Get('refresh_token')
+    async getAccess_token(@Req() req: Request) {
+        if ('refresh_token' in req.cookies)
+            return this.authService.getAccess_token(req.cookies['refresh_token']);
+        throw new ForbiddenException('refresh_token not exist')
+    }
     
     @Post('forget')
     async forget(@Body() forgetDto: ForgetDto) {

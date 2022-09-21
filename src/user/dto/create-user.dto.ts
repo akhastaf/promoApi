@@ -17,7 +17,7 @@ export class CreateUserDto {
     phone: string;
     @ApiProperty()
     @IsString()
-    adderres: string;
+    address: string;
     @ApiProperty()
     @IsString()
     // @IsNotEmpty()
@@ -34,7 +34,9 @@ export class CreateUserDto {
     password_confirmation: string;
     @ApiProperty()
     @IsString()
-    @Contains(UserRole.MANAGER)
+    @Contains(UserRole.MANAGER || UserRole.MODERATOR)
     @IsEnum(UserRole)
     role: string;
+    @ApiProperty()
+    avatar: any;
 }

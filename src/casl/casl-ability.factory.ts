@@ -33,6 +33,8 @@ export class CaslAbilityFactory {
             cannot(Actions.Subscribe, User).because('you are an admin');
             cannot(Actions.UnSubscribe, User).because('you are an admin');
             can(Actions.Manage, User);
+            can(Actions.Read, Promotion);
+            can(Actions.ReadOne, Promotion);
         } else if (user.role === UserRole.MODERATOR) {
             cannot(Actions.Manage, Promotion).because('you are an moderator');
             cannot(Actions.Subscribe, User).because('you are an admin');
@@ -43,16 +45,18 @@ export class CaslAbilityFactory {
             cannot(Actions.ReadOne, User, { role: UserRole.ADMIN}).because('you are not admin');
         }
         else if (user.role === UserRole.MANAGER) {
-            can(Actions.Manage, Promotion, {'user.id': { $eq: user.id }})
-            //cannot(Actions.Manage, Promotion, { user: { id: { $ne: user.id }}})
+            can(Actions.Manage, Promotion, { 'user.id': { $eq: user.id }})
+            can(Actions.Manage, User, { id: { $eq: user.id }})
+            cannot(Actions.Manage, Promotion, { 'user.id': { $ne: user.id }})
         }
         else if (user.role === UserRole.CUSTOMER) {
             cannot(Actions.Create, Promotion).because('you are an customer');
             cannot(Actions.Upadate, Promotion).because('you are an customer');
             cannot(Actions.Delete, Promotion).because('you are an customer');
-            cannot(Actions.ReadOne, Promotion, { user: { customers: { id: {$ne: user.id}}}})
-            can(Actions.ReadOne, Promotion);
+            can(Actions.ReadOne, Promotion, { 'user.customers.id': {$eq: user.id}})
+            can(Actions.Read, Promotion, { 'user.customers.id': {$eq: user.id}});
             can(Actions.ReadOne, User, { id: user.id });
+            can(Actions.Read, User, { 'managers.customers.id': {$eq : user.id }});
             can(Actions.Subscribe, User, { role: UserRole.MANAGER });
             can(Actions.UnSubscribe, User, { role: UserRole.MANAGER });
         }

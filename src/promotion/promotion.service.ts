@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
 import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository, UpdateResult } from 'typeorm';
@@ -22,26 +23,28 @@ export class PromotionService {
     }
   }
   
-  async findAll(user: User, ability: AppAbility) : Promise<Promotion[]> {
+  async findAll(user: User,
+                option: IPaginationOptions,
+                ability: AppAbility,
+                ) : Promise<Pagination<Promotion>> 
+  {
     try {
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Promotion);
+      const qb = this.promotionRepository.createQueryBuilder('promotion');
       if (user.role === UserRole.ADMIN)
-      return await this.promotionRepository.find({
-        where: {
-          user: {
-            id: user.id,
-          },
-        }, relations: {
-          user: true,
+        return await paginate<Promotion>(this.promotionRepository, option);
+      if (user.role === UserRole.CUSTOMER)
+      {
+        qb.leftJoinAndSelect('promotion.user', 'user')
+          .leftJoin('user.customers', 'customers')
+          .where('customers.id = :id', { id: user.id});
+          return await paginate<Promotion>(qb, option);
         }
-      });
-      return await this.promotionRepository.find({
-        where: {
-          user: {
-            id: user.id,
-          },
-        }
-      });
+      else if (user.role === UserRole.MANAGER){
+        qb.leftJoinAndSelect('promotion.user', 'user')
+        .where('promotion.user = :userId', { userId: user.id});
+        return await paginate<Promotion>(qb, option);
+      }
     } catch (error) {
       throw new ForbiddenException(error.message);
     }
@@ -53,15 +56,13 @@ export class PromotionService {
         where: {
           id: id,
         },
-        relations: {
-          user: true
-        }
+        relations: ['user', 'user.customers']
       });
       ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, promotion);
       return promotion;
     } catch (error) {
       if (error instanceof ForbiddenException)
-      throw new ForbiddenException(error.message);
+        throw new ForbiddenException(error.message);
       throw new BadRequestException('promotion dosent exist');
     }
   }
@@ -71,10 +72,11 @@ export class PromotionService {
       const promotion = await this.promotionRepository.findOneOrFail({
         where: {
           id,
-        }
+        },
+        relations: ['user', 'user.customers']
       });
       ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, promotion);
-      return await this.promotionRepository.update(promotion.id, promotion);
+      return await this.promotionRepository.update(promotion.id, updatePromotionDto);
     } catch (error) {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);
@@ -87,6 +89,9 @@ export class PromotionService {
       const promotion = await this.promotionRepository.findOneOrFail({
         where: {
           id,
+        },
+        relations: {
+          user: true,
         }
       });
       ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, promotion);
