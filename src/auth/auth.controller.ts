@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, ForbiddenException, Get, Param, Post, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, ForbiddenException, Get, Param, Post, Query, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -12,6 +12,7 @@ import { ForgetDto } from './dto/forget.dto';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { I18n, I18nContext } from 'nestjs-i18n';
+import { JWTGuard } from './guardes/jwt.guard';
 
 @ApiTags('Auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -23,9 +24,18 @@ export class AuthController {
     @Post('login')
     async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
         const tokens = this.authService.login(req.user);
-        res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true });
+        console.log(tokens);
+        const expireIn = new Date();
+        expireIn.setMonth(expireIn.getMonth() + 3);
+        res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });
         res.send({ user: req.user, access_token: tokens.access_token });
-        return { user: req.user, access_token: tokens.access_token };
+    }
+
+    @UseGuards(JWTGuard)
+    @Delete('logout')
+    async logout(@Req() req: RequestWithAuth , @Res() res: Response) : Promise<void> {
+        res.clearCookie('refresh_token');
+        res.send();
     }
 
     @Post('register')
@@ -34,10 +44,16 @@ export class AuthController {
     }
 
     @Get('refresh_token')
-    async getAccess_token(@Req() req: Request) {
+    async getAccess_token(@Req() req: Request, @Res() res: Response) {
         if ('refresh_token' in req.cookies)
-            return this.authService.getAccess_token(req.cookies['refresh_token']);
-        throw new ForbiddenException('refresh_token not exist')
+        {
+            const expireIn = new Date();
+            expireIn.setMonth(expireIn.getMonth() + 3);
+            const tokens = await this.authService.getAccess_token(req.cookies['refresh_token']);
+            res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn })
+            res.send({ access_token: tokens.access_token });
+        }
+        throw new UnauthorizedException('refresh_token not exist')
     }
     
     @Post('forget')

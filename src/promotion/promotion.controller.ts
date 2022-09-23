@@ -11,6 +11,7 @@ import { ForbiddenError } from '@casl/ability';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SharpPipe } from './pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
 
 @ApiTags('Promotions')
 @ApiBearerAuth()
