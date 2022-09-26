@@ -23,8 +23,7 @@ export class AuthController {
     @UseGuards(LocalGuard)
     @Post('login')
     async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
-        const tokens = this.authService.login(req.user);
-        console.log(tokens);
+        const tokens: any = this.authService.login(req.user, loginUserDto.token);
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);
         res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });
@@ -35,7 +34,7 @@ export class AuthController {
     @Delete('logout')
     async logout(@Req() req: RequestWithAuth , @Res() res: Response) : Promise<void> {
         res.clearCookie('refresh_token');
-        res.send();
+        res.status(200).send();
     }
 
     @Post('register')

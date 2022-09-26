@@ -222,4 +222,8 @@ export class UserService {
       throw new NotFoundException();
     }
   }
+
+  async updateToken(user: User, token: string) {
+    return await this.userRepository.update(user.id, { token: token });
+  }
 }

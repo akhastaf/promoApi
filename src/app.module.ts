@@ -16,7 +16,6 @@ import { CookieResolver, I18nModule, I18nYamlLoader, QueryResolver } from 'nestj
             I18nModule.forRoot({
               fallbackLanguage: 'fr',
               fallbacks: { 'en': 'en', 'fr': 'fr'},
-              logging: true,
               loaderOptions: {
                 path: join(__dirname, '/i18n/'),
                 watch: true,
