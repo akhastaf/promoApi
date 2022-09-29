@@ -45,8 +45,8 @@ export class User {
     phone: string;
     @Column({ nullable: true })
     address: string;
-    @Exclude()
     @Column({ nullable: true })
+    @Exclude()
     token: string;
     @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];

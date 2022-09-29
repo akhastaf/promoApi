@@ -23,11 +23,12 @@ export class AuthController {
     @UseGuards(LocalGuard)
     @Post('login')
     async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
-        const tokens: any = this.authService.login(req.user, loginUserDto.token);
+        const tokens: any = await this.authService.login(req.user, loginUserDto.token);
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);
         res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });
-        res.send({ user: req.user, access_token: tokens.access_token });
+        const { password, token, ...user} = req.user;
+        res.send({ user, access_token: tokens.access_token });
     }
 
     @UseGuards(JWTGuard)
