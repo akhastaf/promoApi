@@ -12,9 +12,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SharpPipe } from './pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
+import { LogGuard } from 'src/auth/guardes/log.guards';
 
 @ApiTags('Promotions')
 @ApiBearerAuth()
+@UseGuards(LogGuard)
 @UseGuards(JWTGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('promotions')

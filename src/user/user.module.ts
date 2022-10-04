@@ -8,9 +8,10 @@ import { CaslModule } from 'src/casl/casl.module';
 import { PromotionModule } from 'src/promotion/promotion.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { CustomerToManager } from './entities/customer_to_manager.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Promotion]),ConfigModule, CaslModule, PromotionModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([User, Promotion, CustomerToManager]),ConfigModule, CaslModule, PromotionModule, JwtModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService]

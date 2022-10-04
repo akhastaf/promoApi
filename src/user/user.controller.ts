@@ -135,12 +135,12 @@ export class UserController {
   }
   
   // Customer
-  @Get('customer/subscribe/:id')
+  @Get('subscribe/:id')
   async subscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<User> {
     const ability = this.abilityFactory.defineAbility(req.user);
     return await this.userService.subscribe(id, req.user, ability);
   }
-  @Get('customer/unsubscribe/:id')
+  @Get('unsubscribe/:id')
   async unsubscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<any> {
     const ability = this.abilityFactory.defineAbility(req.user);
     return await this.userService.unsubscribe(id, req.user, ability);

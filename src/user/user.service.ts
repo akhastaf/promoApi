@@ -15,12 +15,14 @@ import { ForbiddenError } from '@casl/ability';
 import { ConfigService } from '@nestjs/config';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { CustomerToManager } from './entities/customer_to_manager.entity';
 @Injectable()
 export class UserService {
   constructor(private promotionServivce: PromotionService,
               //private i18nService: I18nService,
               private jwtService: JwtService,
               private configService: ConfigService,
+            @InjectRepository(CustomerToManager) private customerToManagerRepository : Repository<CustomerToManager>,
             @InjectRepository(User) private userRepository : Repository<User>,) {}
 
 
@@ -51,12 +53,14 @@ export class UserService {
       if (user.role === UserRole.MANAGER) 
       {
         qb.leftJoin('user.managers', 'managers')
-          .where('managers.id = :id', { id: user.id});
+          .select(['user', 'managers.subcribeDate'])
+          .where('managers.managerId = :id', { id: user.id});
       }
       if (user.role === UserRole.CUSTOMER) 
       {
         qb.leftJoin('user.customers', 'customers')
-          .where('customers.id = :id', { id: user.id});
+          .leftJoinAndSelect('user.promotions', 'promotions')
+          .where('customers.customerId = :id', { id: user.id});
       }
       return await paginate<User>(qb, option);
     } catch (error) {
@@ -191,12 +195,14 @@ export class UserService {
         }
       })
       ForbiddenError.from(ability).throwUnlessCan(Actions.Subscribe, manager);
-      user.managers = [manager, ...user.managers];
-      await this.userRepository.save(user);
+      //user.managers = [manager, ...user.managers];
+      const customertoManager = this.customerToManagerRepository.create({customer: user, manager: manager})
+      await this.customerToManagerRepository.save(customertoManager);
       return  await this.findOne(user.id, ability);
     } catch (error) {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);
+      console.log(error.message);
       throw new NotFoundException();
     }
   }

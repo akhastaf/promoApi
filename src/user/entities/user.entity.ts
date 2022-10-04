@@ -2,6 +2,7 @@ import { Promotion } from "src/promotion/entities/promotion.entity";
 import { BeforeInsert, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { Exclude } from "class-transformer";
+import { CustomerToManager } from "./customer_to_manager.entity";
 
 export enum UserRole {
     ADMIN='ADMIN',
@@ -50,11 +51,10 @@ export class User {
     token: string;
     @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];
-    @ManyToMany(() => User, (customer) => customer.managers, { onDelete: 'SET NULL' })
-    customers?: User[];
-    @ManyToMany(() => User, (manager) => manager.customers, { onDelete: 'SET NULL' } )
-    @JoinTable()
-    managers?: User[];
+    @OneToMany(() => CustomerToManager, (customer) => customer.manager, { onDelete: 'SET NULL' })
+    customers?: CustomerToManager[];
+    @OneToMany(() => CustomerToManager, (manager) => manager.customer, { onDelete: 'SET NULL' } )
+    managers?: CustomerToManager[];
     
     
     
