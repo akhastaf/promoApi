@@ -61,7 +61,7 @@ export class AuthService {
 
     async forget(forgetDto: ForgetDto) {
         try {
-            const user = await this.userService.generateToken(forgetDto.eamil);
+            const user = await this.userService.generateToken(forgetDto.email);
             await this.mailService.sendReset(user);
             return { msg: 'success'};
         } catch (error) {

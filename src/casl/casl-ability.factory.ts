@@ -56,6 +56,7 @@ export class CaslAbilityFactory {
             can(Actions.ReadOne, Promotion, { 'user.customers.id': {$eq: user.id}})
             can(Actions.Read, Promotion, { 'user.customers.id': {$eq: user.id}});
             can(Actions.ReadOne, User, { id: user.id });
+            can(Actions.Upadate, User, { id: user.id });
             can(Actions.Read, User, { 'managers.customers.id': {$eq : user.id }});
             can(Actions.Subscribe, User, { role: UserRole.MANAGER });
             can(Actions.UnSubscribe, User, { role: UserRole.MANAGER });

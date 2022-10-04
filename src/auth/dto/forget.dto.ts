@@ -4,5 +4,5 @@ import { IsEmail } from "class-validator";
 export class ForgetDto {
     @ApiProperty()
     @IsEmail()
-    eamil: string;
+    email: string;
 }

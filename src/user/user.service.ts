@@ -64,7 +64,8 @@ export class UserService {
       }
       return await paginate<User>(qb, option);
     } catch (error) {
-      throw new ForbiddenException(error.message);
+      if (error instanceof ForbiddenError)
+        throw new ForbiddenException(error.message);
     }
     
   }
