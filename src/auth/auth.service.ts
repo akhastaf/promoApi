@@ -39,7 +39,7 @@ export class AuthService {
                 refresh_token: this.jwtService.sign(payload, {
                     secret: this.configService.get('JWT_SECRET'),
                     expiresIn: '90d'
-                }) };
+                })};
     }
 
     async getAccess_token(refrsh_token: string) {

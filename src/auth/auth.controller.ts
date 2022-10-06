@@ -23,6 +23,7 @@ export class AuthController {
     @UseGuards(LocalGuard)
     @Post('login')
     async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
+        console.debug(loginUserDto);
         const tokens: any = await this.authService.login(req.user, loginUserDto.token);
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);

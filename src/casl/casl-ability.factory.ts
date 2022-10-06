@@ -10,7 +10,7 @@ export enum Actions {
     Create = 'create',
     Read = 'read',
     ReadOne = 'readOne',
-    Upadate = 'update', 
+    Update = 'update', 
     Delete = 'delete',
     Subscribe = 'subscribe',
     UnSubscribe = 'unsubscribe',
@@ -28,7 +28,7 @@ export class CaslAbilityFactory {
 
         if (user.role === UserRole.ADMIN) {
             cannot(Actions.Create, Promotion).because('you are an admin');
-            cannot(Actions.Upadate, Promotion).because('you are an admin');
+            cannot(Actions.Update, Promotion).because('you are an admin');
             cannot(Actions.Delete, Promotion).because('you are an admin');
             cannot(Actions.Subscribe, User).because('you are an admin');
             cannot(Actions.UnSubscribe, User).because('you are an admin');
@@ -48,15 +48,17 @@ export class CaslAbilityFactory {
             can(Actions.Manage, Promotion, { 'user.id': { $eq: user.id }})
             can(Actions.Manage, User, { id: { $eq: user.id }})
             cannot(Actions.Manage, Promotion, { 'user.id': { $ne: user.id }})
+            cannot(Actions.Subscribe, User).because('you are an manager');
+            cannot(Actions.UnSubscribe, User).because('you are an manger');
         }
         else if (user.role === UserRole.CUSTOMER) {
             cannot(Actions.Create, Promotion).because('you are an customer');
-            cannot(Actions.Upadate, Promotion).because('you are an customer');
+            cannot(Actions.Update, Promotion).because('you are an customer');
             cannot(Actions.Delete, Promotion).because('you are an customer');
             can(Actions.ReadOne, Promotion, { 'user.customers.id': {$eq: user.id}})
             can(Actions.Read, Promotion, { 'user.customers.id': {$eq: user.id}});
             can(Actions.ReadOne, User, { id: user.id });
-            can(Actions.Upadate, User, { id: user.id });
+            can(Actions.Update, User, { id: user.id });
             can(Actions.Read, User, { 'managers.customers.id': {$eq : user.id }});
             can(Actions.Subscribe, User, { role: UserRole.MANAGER });
             can(Actions.UnSubscribe, User, { role: UserRole.MANAGER });

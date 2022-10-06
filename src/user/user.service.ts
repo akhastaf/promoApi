@@ -102,7 +102,7 @@ export class UserService {
           promotions: true,
         }
       });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, userToupdate);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, userToupdate);
       return await this.userRepository.update(userToupdate.id, updateUserDto);
     } catch (error) {
       if (error instanceof ForbiddenError)

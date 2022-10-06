@@ -14,10 +14,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SharpPipe } from 'src/promotion/pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { I18n, I18nContext } from 'nestjs-i18n';
+import { LogGuard } from 'src/auth/guardes/log.guards';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @UseGuards(JWTGuard)
+@UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UserController {

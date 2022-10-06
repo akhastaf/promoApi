@@ -75,7 +75,7 @@ export class PromotionService {
         },
         relations: ['user', 'user.customers']
       });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, promotion);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, promotion);
       return await this.promotionRepository.update(promotion.id, updatePromotionDto);
     } catch (error) {
       if (error instanceof ForbiddenError)
@@ -94,7 +94,7 @@ export class PromotionService {
           user: true,
         }
       });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, promotion);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, promotion);
       return await this.promotionRepository.remove(promotion);
       
     } catch (error) {
@@ -106,7 +106,7 @@ export class PromotionService {
       
   async getPromotionsForCustomer(customer: User, ability: AppAbility): Promise<Promotion[]> {
     try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Upadate, Promotion);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, Promotion);
       return await this.promotionRepository.find({
         where: {
           user: {
