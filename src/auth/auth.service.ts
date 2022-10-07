@@ -10,6 +10,7 @@ import { ResetDTO } from './dto/reset.dto';
 import { ForgetDto } from './dto/forget.dto';
 import { MailService } from 'src/mail/mailService';
 import { I18nContext } from 'nestjs-i18n';
+import { Payload } from 'src/types';
 
 @Injectable()
 export class AuthService {
@@ -44,11 +45,11 @@ export class AuthService {
 
     async getAccess_token(refrsh_token: string) {
         try {
-            const payload = await this.jwtService.verifyAsync(refrsh_token, {
+            const payload: Payload = await this.jwtService.verifyAsync(refrsh_token, {
                 secret: this.configService.get('JWT_SECRET'),
                 ignoreExpiration: false
             });
-            const user = await this.userService.findOneByEmail(payload.eamil);
+            const user = await this.userService.findOneByEmail(payload.email);
             return this.login(user);
         } catch (error) {
             throw new ForbiddenException(error.message);

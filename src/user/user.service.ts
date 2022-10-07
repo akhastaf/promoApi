@@ -165,12 +165,16 @@ export class UserService {
   }
 
   async findOneByEmail(email: string) : Promise<User> {
-      const user = await this.userRepository.findOne({
+    try {
+      const user = await this.userRepository.findOneOrFail({
         where: {
           email: email,
         }
       });
       return user;
+    } catch (error) {
+      throw new ForbiddenException();
+    }
   }
   async findOneById(id: number, role?: any) : Promise<User> {
     try {
