@@ -1,4 +1,3 @@
-import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/user/entities/user.entity';
 // import { User } from "src/user/entities/user.entity";
 // import dotenv from 'dotenv';

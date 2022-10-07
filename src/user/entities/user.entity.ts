@@ -1,6 +1,6 @@
 import { Promotion } from "src/promotion/entities/promotion.entity";
 import { BeforeInsert, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { Exclude } from "class-transformer";
 import { CustomerToManager } from "./customer_to_manager.entity";
 

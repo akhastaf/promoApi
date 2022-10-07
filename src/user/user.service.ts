@@ -4,7 +4,7 @@ import { Repository, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserRole } from './entities/user.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { RegisterCustomerDto } from 'src/auth/dto/register-customer.dto';
 import { PromotionService } from 'src/promotion/promotion.service';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
