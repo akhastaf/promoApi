@@ -32,9 +32,7 @@ export class AuthService {
         return null;
     }
 
-    async login(user: User, token?: string): Promise<any> {
-        if (token)
-            await this.userService.updateToken(user, token);
+    async login(user: User): Promise<any> {
         const payload = { email: user.email, sub: user.id };
         return { access_token: this.jwtService.sign(payload),
                 refresh_token: this.jwtService.sign(payload, {

@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MailModule } from './mail/mail.module';
 import { CookieResolver, I18nModule, I18nYamlLoader, QueryResolver } from 'nestjs-i18n';
+import { CustomerModule } from './customer/customer.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -32,7 +33,8 @@ import { CookieResolver, I18nModule, I18nYamlLoader, QueryResolver } from 'nestj
             UserModule,
             PromotionModule,
             CaslModule,
-            MailModule
+            MailModule,
+            CustomerModule
             ],
   controllers: [],
   providers: [],

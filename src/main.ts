@@ -7,12 +7,17 @@ import * as cookieParser from 'cookie-parser';
 import * as morgan from 'morgan';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
   const configService : ConfigService = app.get(ConfigService);
   app.use(morgan('tiny'));
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true
   }));
+  app.enableCors({
+    origin: configService.get('CLIENT_HOST'),
+    credentials: true,
+  })
+  console.log(configService.get('CLIENT_HOST'));
   app.use(cookieParser());
   const config = new DocumentBuilder()
                  .setTitle('Promotion API')

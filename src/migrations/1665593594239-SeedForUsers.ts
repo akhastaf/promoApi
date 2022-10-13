@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from "typeorm"
 import { Admin } from "./seeds/Admin";
 import { Users } from "./seeds/Users";
 
-export class SeedForUsers1664809934659 implements MigrationInterface {
+export class SeedForUsers1665593594239 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         const admin = queryRunner.manager.getRepository(User).create(Admin);

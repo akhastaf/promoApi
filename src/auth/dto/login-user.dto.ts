@@ -13,8 +13,4 @@ export class LoginUserDto {
     // @Max(20)
     // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
     password: string;
-    @ApiProperty()
-    @IsString()
-    @IsOptional()
-    token?: string;
 }

@@ -33,14 +33,15 @@ export class PromotionService {
       const qb = this.promotionRepository.createQueryBuilder('promotion');
       if (user.role === UserRole.ADMIN)
         return await paginate<Promotion>(this.promotionRepository, option);
-      if (user.role === UserRole.CUSTOMER)
-      {
-        qb.leftJoinAndSelect('promotion.user', 'user')
-          .leftJoin('user.customers', 'customers')
-          .where('customers.id = :id', { id: user.id});
-          return await paginate<Promotion>(qb, option);
-        }
-      else if (user.role === UserRole.MANAGER){
+      // if (user.role === UserRole.CUSTOMER)
+      // {
+      //   qb.leftJoinAndSelect('promotion.user', 'user')
+      //     .leftJoin('user.customers', 'customers')
+      //     .where('customers.customerId = :id', { id: user.id});
+      //     return await paginate<Promotion>(qb, option);
+      //   }
+      // else
+      if (user.role === UserRole.MANAGER){
         qb.leftJoinAndSelect('promotion.user', 'user')
         .where('promotion.user = :userId', { userId: user.id});
         return await paginate<Promotion>(qb, option);

@@ -9,7 +9,10 @@ export class Promotion {
     title: string;
     @Column({ type: 'text' , nullable: true })
     description: string;
-    @Column({ default: '/promo_default.png' })
+    @Column({ default: '/promo_default.png', transformer: {
+        from: img => `${process.env.CLIENT_HOST}/${img}`,
+        to: img => img
+    }})
     image: string;
 
     @ManyToOne(() => User, (user) => user.promotions, { onDelete: 'CASCADE'})
@@ -19,4 +22,7 @@ export class Promotion {
     createdAt: Date;
     @UpdateDateColumn()
     updatedAt: Date;
+
+
+    
 }

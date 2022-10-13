@@ -13,8 +13,10 @@ import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { JWTGuard } from './guardes/jwt.guard';
+import { LogGuard } from './guardes/log.guards';
 
 @ApiTags('Auth')
+@UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('auth')
 export class AuthController {
@@ -24,7 +26,7 @@ export class AuthController {
     @Post('login')
     async login(@Req() req: RequestWithAuth , @Res() res: Response,@Body() loginUserDto: LoginUserDto) {
         console.debug(loginUserDto);
-        const tokens: any = await this.authService.login(req.user, loginUserDto.token);
+        const tokens: any = await this.authService.login(req.user);
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);
         res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });

@@ -2,23 +2,6 @@ import { UserRole } from "src/user/entities/user.entity";
 
 export const Users = [
     {
-        name: 'customer1',//process.env.ADMIN_FIRST_NAME,
-        email: 'customer1@customer.com',//process.env.ADMIN_EMAIL,
-        password: 'customer',//process.env.ADMIN_PASSWORD
-        role: UserRole.CUSTOMER,
-    },
-    {
-        name: 'customer2',//process.env.ADMIN_FIRST_NAME,
-        email: 'customer2@customer.com',//process.env.ADMIN_EMAIL,
-        password: 'customer',//process.env.ADMIN_PASSWORD
-        role: UserRole.CUSTOMER,
-    },
-    {
-        name: 'customer3',//process.env.ADMIN_FIRST_NAME,
-        email: 'customer3@customer.com',//process.env.ADMIN_EMAIL,
-        password: 'customer',//process.env.ADMIN_PASSWORD
-    },
-    {
         name: 'manager1',//process.env.ADMIN_FIRST_NAME,
         email: 'manager1@manager.com',//process.env.ADMIN_EMAIL,
         password: 'manager',//process.env.ADMIN_PASSWORD

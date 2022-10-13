@@ -9,7 +9,7 @@ import { AbilitiesGuards } from 'src/casl/guards/abilies.guard';
 import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
 import { Actions, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Promotion } from 'src/promotion/entities/promotion.entity';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SharpPipe } from 'src/promotion/pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
@@ -25,7 +25,7 @@ import { LogGuard } from 'src/auth/guardes/log.guards';
 export class UserController {
   constructor(private readonly userService: UserService,
               private readonly abilityFactory: CaslAbilityFactory) {}
-
+              
   @ApiBody({
     schema: {
       type: 'object',
@@ -69,23 +69,29 @@ export class UserController {
   @Post()
   @UseInterceptors(FileInterceptor('avatar'))
   create(@Req() req: RequestWithAuth,
-        @UploadedFile(SharpPipe) avatar: string,
-        @Body() createUserDto: CreateUserDto,
-        @I18n() i18n: I18nContext) {
+  @UploadedFile(SharpPipe) avatar: string,
+  @Body() createUserDto: CreateUserDto,
+  @I18n() i18n: I18nContext) {
     if (avatar)
-          createUserDto.avatar = avatar;
+    createUserDto.avatar = avatar;
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.userService.create(createUserDto, i18n, ability);
   }
 
+  @Get('me')
+  me(@Req() req: RequestWithAuth) {
+    return this.userService.me(req.user);
+  }
+
   @Get()
   findAll(@Req() req: RequestWithAuth,
-          @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-          @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<User>>
+      @Query('role', new DefaultValuePipe(UserRole.ALL)) role: string,
+      @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+      @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<User>>
   {
     limit = limit > 100 ? 100 : limit;
     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.findAll(req.user, { limit, page } ,ability);
+    return this.userService.findAll(req.user, { limit, page }, role, ability);
   }
   
   @Get(':id')
@@ -135,16 +141,17 @@ export class UserController {
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.userService.remove(id, ability);
   }
+
   
-  // Customer
-  @Get('subscribe/:id')
-  async subscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<User> {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.userService.subscribe(id, req.user, ability);
-  }
-  @Get('unsubscribe/:id')
-  async unsubscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<any> {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.userService.unsubscribe(id, req.user, ability);
-  }
+  // // Customer
+  // @Get('subscribe/:id')
+  // async subscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<User> {
+  //   const ability = this.abilityFactory.defineAbility(req.user);
+  //   return await this.userService.subscribe(id, req.user, ability);
+  // }
+  // @Get('unsubscribe/:id')
+  // async unsubscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<any> {
+  //   const ability = this.abilityFactory.defineAbility(req.user);
+  //   return await this.userService.unsubscribe(id, req.user, ability);
+  // }
 }

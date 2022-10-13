@@ -4,7 +4,6 @@ import { PromotionController } from './promotion.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Promotion } from './entities/promotion.entity';
 import { CaslModule } from 'src/casl/casl.module';
-import { PushService } from './push.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Promotion]), CaslModule],
