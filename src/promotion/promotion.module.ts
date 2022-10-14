@@ -4,9 +4,21 @@ import { PromotionController } from './promotion.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Promotion } from './entities/promotion.entity';
 import { CaslModule } from 'src/casl/casl.module';
+import { Customer } from 'src/customer/entities/customer.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TwilioModule } from 'nestjs-twilio';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Promotion]), CaslModule],
+  imports: [TypeOrmModule.forFeature([Promotion, Customer]), CaslModule, ConfigModule,
+    TwilioModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => ({
+        accountSid: cfg.get('TWILIO_ACCOUNT_SID'),
+        authToken: cfg.get('TWILIO_AUTH_TOKEN'),
+      }),
+    }),
+  ],
   controllers: [PromotionController],
   providers: [PromotionService/*, PushService*/],
   exports: [PromotionService]

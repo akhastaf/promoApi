@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { PromotionModule } from './promotion/promotion.module';
 import { AuthModule } from './auth/auth.module';
@@ -11,7 +11,8 @@ import { join } from 'path';
 import { MailModule } from './mail/mail.module';
 import { CookieResolver, I18nModule, I18nYamlLoader, QueryResolver } from 'nestjs-i18n';
 import { CustomerModule } from './customer/customer.module';
-
+import { TwilioModule } from 'nestjs-twilio';
+// import { TwilioModule } from 'nestjs-twilio';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
             I18nModule.forRoot({

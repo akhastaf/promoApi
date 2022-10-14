@@ -9,7 +9,7 @@ export class Promotion {
     title: string;
     @Column({ type: 'text' , nullable: true })
     description: string;
-    @Column({ default: '/promo_default.png', transformer: {
+    @Column({ default: 'default.png', transformer: {
         from: img => `${process.env.CLIENT_HOST}/${img}`,
         to: img => img
     }})
