@@ -82,7 +82,7 @@ export class CustomerService {
           store: true,
         }
       });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, customer);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Delete, customer);
       return await this.customerRepo.remove(customer);
     } catch (error) {
       if (error instanceof ForbiddenError)

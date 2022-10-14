@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Contains, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
+import { Contains, IsBooleanString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
 import { Settings } from "http2";
 import { Match } from "../decorators/match.decorator";
 import { UserRole } from "../entities/user.entity";
@@ -40,4 +40,7 @@ export class CreateUserDto {
     role: string;
     @ApiProperty()
     avatar: any;
+    @ApiProperty()
+    @IsBooleanString()
+    isActive: boolean;
 }

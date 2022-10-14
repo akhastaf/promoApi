@@ -8,6 +8,7 @@ export const mailerModule = MailerModule.forRootAsync({
     useFactory: async (configService: ConfigService) => ({
         transport: {
             host: configService.get('SMTP_HOST'),
+            port:parseInt(configService.get('SMTP_PORT')),
             secure: false,
             auth: {
               user: configService.get('SMTP_USER'),

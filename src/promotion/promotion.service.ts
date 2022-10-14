@@ -17,7 +17,9 @@ export class PromotionService {
       ForbiddenError.from(ability).throwUnlessCan(Actions.Create, Promotion);
       const promo = this.promotionRepository.create(createPromotionDto);
       promo.user = user;
-      return await this.promotionRepository.save(promo);
+      const promotion = await this.promotionRepository.save(promo);
+      
+      return promotion;
     } catch (error) {
       throw new ForbiddenException(error.message);
     }

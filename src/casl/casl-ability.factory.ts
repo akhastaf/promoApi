@@ -53,6 +53,7 @@ export class CaslAbilityFactory {
             can(Actions.Manage, Promotion, { 'user.id': { $eq: user.id }})
             can(Actions.Manage, User, { id: { $eq: user.id }})
             can(Actions.Read, Customer);
+            can(Actions.Delete, Customer, { 'store.id' : { $eq: user.id } });
             cannot(Actions.Manage, Promotion, { 'user.id': { $ne: user.id }})
             // cannot(Actions.Subscribe, User).because('you are an manager');
             // cannot(Actions.UnSubscribe, User).because('you are an manger');

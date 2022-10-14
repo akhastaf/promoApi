@@ -29,6 +29,7 @@ export class UserService {
               i18n: I18nContext,
               ability?: AppAbility): Promise<any> {
     try {
+      console.log(createUserDto);
       if (ability)
         ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
       const newuser: User = this.userRepository.create(createUserDto);
