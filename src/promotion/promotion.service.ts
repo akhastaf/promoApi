@@ -74,20 +74,14 @@ export class PromotionService {
   {
     try {
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Promotion);
-      const qb = this.promotionRepository.createQueryBuilder('promotion');
-      if (user.role === UserRole.ADMIN)
+      const qb = this.promotionRepository.createQueryBuilder('promotions');
+      qb.leftJoinAndSelect('promotions.user', 'store');
+      // qb.leftJoinAndSelect('promotions.user', 'store');
+      if (user.role === UserRole.ADMIN) {
         return await paginate<Promotion>(this.promotionRepository, option);
-      // if (user.role === UserRole.CUSTOMER)
-      // {
-      //   qb.leftJoinAndSelect('promotion.user', 'user')
-      //     .leftJoin('user.customers', 'customers')
-      //     .where('customers.customerId = :id', { id: user.id});
-      //     return await paginate<Promotion>(qb, option);
-      //   }
-      // else
-      if (user.role === UserRole.MANAGER){
-        qb.leftJoinAndSelect('promotion.user', 'user')
-        .where('promotion.user = :userId', { userId: user.id});
+      }
+      else if (user.role === UserRole.MANAGER){
+        qb.where('promotions.user = :userId', { userId: user.id});
         return await paginate<Promotion>(qb, option);
       }
     } catch (error) {

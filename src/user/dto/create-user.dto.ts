@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Contains, IsBooleanString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
+import { Transform } from "class-transformer";
+import { Contains, IsBoolean, IsBooleanString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches, Max, Min } from 'class-validator';
 import { Settings } from "http2";
 import { Match } from "../decorators/match.decorator";
 import { UserRole } from "../entities/user.entity";
@@ -20,19 +21,19 @@ export class CreateUserDto {
     @IsOptional()
     address?: string;
     @ApiProperty()
-    @IsString()
-    // @IsNotEmpty()
-    // @Min(8)
-    // @Max(20)
-    // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
-    password: string;
-    @ApiProperty()
-    @IsString()
-    // @IsNotEmpty()
-    // @Min(8)
-    // @Max(20)
-    @Match("password", {message: 'repeat password must be idenitcal to password'})
-    password_confirmation: string;
+    // @IsString()
+    // // @IsNotEmpty()
+    // // @Min(8)
+    // // @Max(20)
+    // // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
+    password?: string;
+    // @ApiProperty()
+    // @IsString()
+    // // @IsNotEmpty()
+    // // @Min(8)
+    // // @Max(20)
+    // @Match("password", {message: 'repeat password must be idenitcal to password'})
+    // password_confirmation: string;
     @ApiProperty()
     @IsString()
     // @Contains('STORE' || 'MODERATOR')
@@ -41,6 +42,7 @@ export class CreateUserDto {
     @ApiProperty()
     avatar: any;
     @ApiProperty()
-    @IsBooleanString()
-    isActive: boolean;
+    @IsBoolean()
+    @Transform(({ value }) => value === "true")
+    isActive?: boolean;
 }

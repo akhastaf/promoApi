@@ -15,6 +15,8 @@ import { SharpPipe } from 'src/promotion/pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { LogGuard } from 'src/auth/guardes/log.guards';
+import { UpdateMeDto } from './dto/update-me.dto';
+import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -78,6 +80,50 @@ export class UserController {
     return this.userService.create(createUserDto, i18n, ability);
   }
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          format: 'string',
+        },
+        phone: {
+          type: 'string',
+          format: 'string',
+        },
+        address: {
+          type: 'string',
+          format: 'string',
+        },
+        avatar: {
+          type: 'string',
+          format: 'binary',
+        },
+        language: {
+          type: 'string',
+          format: 'binary',
+        }
+      }
+    }
+  })
+  @ApiConsumes('multipart/form-data')
+  @Patch('me')
+  @UseInterceptors(FileInterceptor('avatar'))
+  updateMe(@Req() req: RequestWithAuth ,
+        @UploadedFile(SharpPipe) avatar: string,
+        @Body() upadateMeDto: UpdateMeDto) {
+    if (avatar)
+    upadateMeDto.avatar = avatar;
+    const ability = this.abilityFactory.defineAbility(req.user);
+    return this.userService.updateMe(req.user, upadateMeDto, ability);
+  }
+  @Patch('me/security')
+  updateMeSecurity(@Req() req: RequestWithAuth ,
+        @Body() updateMeDto: UpdateMeSecurityDto) {
+    const ability = this.abilityFactory.defineAbility(req.user);
+    return this.userService.updateMeSecurity(req.user, updateMeDto, ability);
+  }
   @Get('me')
   me(@Req() req: RequestWithAuth) {
     return this.userService.me(req.user);
@@ -85,13 +131,15 @@ export class UserController {
 
   @Get()
   findAll(@Req() req: RequestWithAuth,
+      @Query('order') order: string,
       @Query('role', new DefaultValuePipe(UserRole.ALL)) role: string,
       @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
       @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<User>>
   {
     limit = limit > 100 ? 100 : limit;
+    order = order ?? 'email';
     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.findAll(req.user, { limit, page }, role, ability);
+    return this.userService.findAll(req.user, { limit, page }, role, order, ability);
   }
   
   @Get(':id')
@@ -120,6 +168,10 @@ export class UserController {
           type: 'string',
           format: 'binary',
         },
+        isActive: {
+          type: 'boolean',
+          format: 'boolean'
+        }
       }
     }
   })
@@ -135,6 +187,7 @@ export class UserController {
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.userService.update(id, updateUserDto, ability);
   }
+  
   
   @Delete(':id')
   remove(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {

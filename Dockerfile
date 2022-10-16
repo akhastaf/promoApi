@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:alpine as development
 WORKDIR "/app"
 COPY ./package.json ./
 RUN chown root.root .
@@ -7,4 +7,6 @@ RUN npm install -g @nestjs/cli
 RUN npm install
 # RUN npm run migration:run
 COPY . .
+# RUN npm run build
 CMD ["npm", "run", "start:dev"]
+# CMD ["npm", "dist/main.js"]

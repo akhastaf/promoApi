@@ -21,4 +21,15 @@ export class MailService {
             }
         });
     }
+    async sendStoreCreation(email: string, password: string) : Promise<void> {
+        this.mailerService.sendMail({
+            to: email,
+            subject: 'Reset your password',
+            template: './newStore',
+            context: {
+                email,
+                password,
+            }
+        });
+    }
 }

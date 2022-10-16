@@ -11,7 +11,9 @@ async function bootstrap() {
   const configService : ConfigService = app.get(ConfigService);
   app.use(morgan('tiny'));
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true
+    whitelist: true,
+    // forbidNonWhitelisted: true,
+    transform: true
   }));
   app.enableCors({
     origin: configService.get('CLIENT_HOST'),

@@ -16,10 +16,14 @@ import { ConfigService } from '@nestjs/config';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { identity } from 'rxjs';
+import { MailService } from 'src/mail/mailService';
+import { UpdateMeDto } from './dto/update-me.dto';
+import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
 
 @Injectable()
 export class UserService {
   constructor(private jwtService: JwtService,
+              private mailService: MailService,
               private configService: ConfigService,
             @InjectRepository(User) private userRepository : Repository<User>,) {}
 
@@ -32,8 +36,13 @@ export class UserService {
       console.log(createUserDto);
       if (ability)
         ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
+      createUserDto.password = Math.random().toString(36).slice(-8);
+      console.log('password: ',createUserDto.password);
       const newuser: User = this.userRepository.create(createUserDto);
-      return await this.userRepository.save(newuser);
+      
+      const user = await this.userRepository.save(newuser);
+      await this.mailService.sendStoreCreation(user.email, createUserDto.password);
+      return user;
     } catch (error) {
       throw new ForbiddenException(await i18n.t('test.user.ERROR'));
     }
@@ -42,6 +51,7 @@ export class UserService {
   async findAll(user: User,
                 option: IPaginationOptions,
                 role: string,
+                order: string,
                 ability: AppAbility): Promise<Pagination<User>> {
                 
     try {
@@ -50,15 +60,19 @@ export class UserService {
       if (user.role === UserRole.ADMIN) {
         if (role === UserRole.ALL)
           return await paginate<User>(this.userRepository, option);
-        qb.where('user.role = :role', { role: role});
-      }
-      else if (user.role === UserRole.MODERATOR) {
-        console.log(user);
-        qb.where('user.role = :role', { role: UserRole.MANAGER });
-      }
-      else if (user.role === UserRole.MANAGER)
-        qb.where('user.id = :id', { id: user.id});
-      return await paginate<User>(qb, option);
+        qb.where('user.role = :role', { role: role})
+          .orderBy(order, 'ASC');
+        }
+        else if (user.role === UserRole.MODERATOR) {
+          console.log(user);
+          qb.where('user.role = :role', { role: UserRole.MANAGER })
+          .orderBy(order, 'ASC');
+        }
+        else if (user.role === UserRole.MANAGER) {
+          qb.where('user.id = :id', { id: user.id})
+          .orderBy(order, 'ASC');
+        }
+        return await paginate<User>(qb, option);
     } catch (error) {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);
@@ -93,9 +107,6 @@ export class UserService {
       const userToupdate = await this.userRepository.findOneOrFail({
         where: {
           id,
-        },
-        relations: {
-          promotions: true,
         }
       });
       ForbiddenError.from(ability).throwUnlessCan(Actions.Update, userToupdate);
@@ -104,6 +115,44 @@ export class UserService {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message)
       throw new NotFoundException('user is not found');
+      }
+    }
+  async updateMeSecurity(user: User, updateMeDto: UpdateMeSecurityDto, ability: AppAbility) : Promise<UpdateResult> {
+    try {
+      
+      // const userToupdate = await this.userRepository.findOneOrFail({
+      //   where: {
+      //     id: user.id,
+      //   }
+      // });
+      if (updateMeDto.password) {
+        const valid = await bcrypt.compare(updateMeDto.password, user.password);
+        if (!valid)
+          throw new ForbiddenException('password incorrect');
+        user.password = await bcrypt.hash(updateMeDto.new_password, 10);
+      }
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, user);
+      return await this.userRepository.update(user.id, user);
+    } catch (error) {
+      if (error instanceof ForbiddenError || error instanceof ForbiddenException)
+        throw new ForbiddenException(error.message)
+      throw new NotFoundException(error.message);
+      }
+    }
+  async updateMe(user: User, updateMeDto: UpdateMeDto, ability: AppAbility) : Promise<UpdateResult> {
+    try {
+      console.log(updateMeDto);
+      const userToupdate = await this.userRepository.findOneOrFail({
+        where: {
+          id: user.id,
+        }
+      });
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, user);
+      return await this.userRepository.update(user.id, updateMeDto);
+    } catch (error) {
+      if (error instanceof ForbiddenError || error instanceof ForbiddenException)
+        throw new ForbiddenException(error.message)
+      throw new NotFoundException(error.message);
       }
     }
 
