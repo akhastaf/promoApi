@@ -22,6 +22,7 @@ export class MailService {
         });
     }
     async sendStoreCreation(email: string, password: string, name: string) : Promise<void> {
+        const url = this.configService.get('CLIENT_HOST');
         this.mailerService.sendMail({
             to: email,
             subject: 'Welcom',
@@ -30,6 +31,7 @@ export class MailService {
                 email,
                 password,
                 name,
+                url
             }
         });
     }
