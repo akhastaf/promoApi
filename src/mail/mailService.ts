@@ -24,7 +24,7 @@ export class MailService {
     async sendStoreCreation(email: string, password: string, name: string) : Promise<void> {
         this.mailerService.sendMail({
             to: email,
-            subject: 'Reset your password',
+            subject: 'Welcom',
             template: './newStore',
             context: {
                 email,
