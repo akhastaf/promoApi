@@ -41,7 +41,7 @@ export class UserService {
       const newuser: User = this.userRepository.create(createUserDto);
       
       const user = await this.userRepository.save(newuser);
-      await this.mailService.sendStoreCreation(user.email, createUserDto.password);
+      await this.mailService.sendStoreCreation(user.email, createUserDto.password, user.name);
       return user;
     } catch (error) {
       throw new ForbiddenException(await i18n.t('test.user.ERROR'));

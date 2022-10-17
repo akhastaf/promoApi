@@ -21,7 +21,7 @@ export class MailService {
             }
         });
     }
-    async sendStoreCreation(email: string, password: string) : Promise<void> {
+    async sendStoreCreation(email: string, password: string, name: string) : Promise<void> {
         this.mailerService.sendMail({
             to: email,
             subject: 'Reset your password',
@@ -29,6 +29,7 @@ export class MailService {
             context: {
                 email,
                 password,
+                name,
             }
         });
     }
