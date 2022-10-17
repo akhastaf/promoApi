@@ -47,6 +47,7 @@ export class CaslAbilityFactory {
             cannot(Actions.Manage, Customer).because('you are a moderator');
             can(Actions.Create, User);
             can(Actions.Read, User);
+            can(Actions.Update, User, { role: { $eq : UserRole.MANAGER } });
             can(Actions.ReadOne, User, { role: { $eq : UserRole.MANAGER }});
             cannot(Actions.ReadOne, User, { role: UserRole.ADMIN}).because('you are not admin');
         }
