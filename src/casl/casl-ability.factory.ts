@@ -40,6 +40,7 @@ export class CaslAbilityFactory {
             can(Actions.ReadOne, Customer);
             can(Actions.Delete, Customer);
         } else if (user.role === UserRole.MODERATOR) {
+            can(Actions.Manage, User, { id: { $eq: user.id }});
             cannot(Actions.Manage, Promotion).because('you are an moderator');
             // cannot(Actions.Subscribe, User).because('you are an admin');
             // cannot(Actions.UnSubscribe, User).because('you are an admin');
