@@ -54,12 +54,6 @@ export class PromotionService {
           .catch(err => {
             console.error(err);
           });
-        // Send for one
-        // this.twilioService.client.messages.create({
-        //   body: `${promotion.title} ${promotion.description}`,
-        //   from: '+13608688988',//this.configService.get('TWILIO_PHONE'),
-        //   to: customers[0].phone,
-        // });
       }
       return promotion;
     } catch (error) {

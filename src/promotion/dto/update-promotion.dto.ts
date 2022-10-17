@@ -11,7 +11,4 @@ export class UpdatePromotionDto extends PartialType(CreatePromotionDto) {
     @IsString()
     @IsOptional()
     description?: string;
-    @ApiProperty()
-    @IsOptional()
-    image?: any;
 }

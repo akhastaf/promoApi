@@ -44,7 +44,8 @@ export class UserService {
       await this.mailService.sendStoreCreation(user.email, createUserDto.password, user.name);
       return user;
     } catch (error) {
-      throw new ForbiddenException(await i18n.t('test.user.ERROR'));
+      console.log(typeof error);
+      throw new ForbiddenException();
     }
   }
   

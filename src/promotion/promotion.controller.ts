@@ -24,31 +24,30 @@ export class PromotionController {
   constructor(private readonly promotionService: PromotionService,
               private readonly abilityFactory: CaslAbilityFactory) {}
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        title: {
-          type: 'string',
-          format: 'string',
-        },
-        description: {
-          type: 'string',
-          format: 'string',
-        },
-        image: {
-          type: 'string',
-          format: 'binary',
-        },
-      }
-    }
-  })
-  @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       title: {
+  //         type: 'string',
+  //         format: 'string',
+  //       },
+  //       description: {
+  //         type: 'string',
+  //         format: 'string',
+  //       },
+  //       image: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     }
+  //   }
+  // })
+  // @ApiConsumes('multipart/form-data')
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  create(@Req() req: RequestWithAuth, @UploadedFile(SharpPipe) image: string, @Body() createPromotionDto: CreatePromotionDto) {
-    createPromotionDto.image = image;
-    const ability = this.abilityFactory.defineAbility(req.user);
+  // @UseInterceptors(FileInterceptor('image'))
+  create(@Req() req: RequestWithAuth, @Body() createPromotionDto: CreatePromotionDto) {
+     const ability = this.abilityFactory.defineAbility(req.user);
     return this.promotionService.create(createPromotionDto, req.user, ability);
   }
   
@@ -68,34 +67,10 @@ export class PromotionController {
     return await this.promotionService.findOne(id, req.user, ability);
   }
   
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        title: {
-          type: 'string',
-          format: 'string',
-        },
-        description: {
-          type: 'string',
-          format: 'string',
-        },
-        image: {
-          type: 'string',
-          format: 'binary',
-        },
-      }
-    }
-  })
-  @ApiConsumes('multipart/form-data')
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('image'))
   async update(@Req() req: RequestWithAuth,
-              @UploadedFile(SharpPipe) image: string,
               @Param('id', ParseIntPipe) id: number,
               @Body() updatePromotionDto: UpdatePromotionDto) {
-    if (image)
-      updatePromotionDto.image = image;
     const ability = this.abilityFactory.defineAbility(req.user);
     return this.promotionService.update(id, updatePromotionDto, req.user, ability);
   }

@@ -10,7 +10,4 @@ export class CreatePromotionDto {
     @IsString()
     @IsOptional()
     description: string;
-    @ApiProperty()
-    @IsOptional()
-    image?: any;
 }
