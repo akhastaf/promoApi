@@ -6,8 +6,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserRole } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { RegisterCustomerDto } from 'src/auth/dto/register-customer.dto';
-import { PromotionService } from 'src/promotion/promotion.service';
-import { Promotion } from 'src/promotion/entities/promotion.entity';
 import { I18n, I18nContext, I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
 import { ResetDTO } from 'src/auth/dto/reset.dto';
@@ -15,10 +13,11 @@ import { ForbiddenError } from '@casl/ability';
 import { ConfigService } from '@nestjs/config';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { identity } from 'rxjs';
 import { MailService } from 'src/mail/mailService';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
+import * as PDFDocument from 'pdfkit'
+import * as qrcode from 'qrcode'
 
 @Injectable()
 export class UserService {
@@ -237,5 +236,34 @@ export class UserService {
     } catch (error) {
       throw new NotFoundException('user not found');
     }
+  }
+
+  async getQr(user: User) {
+    const pdfBuffer: Buffer = await new Promise(async (resolve) => {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        bufferPages: true,
+      })
+      
+      doc.text('Welcome to our store', {
+        align: 'center',
+      });
+      doc.moveDown(10);
+      const qr = await qrcode.toDataURL(`${this.configService.get('CLIENT_HOST')}/customer/${user.id}`, { errorCorrectionLevel: 'H' });
+      doc.image(qr, {
+        align: 'center',
+        valign: 'center'
+      });
+      doc.end()
+
+      const buffer = []
+      doc.on('data', buffer.push.bind(buffer))
+      doc.on('end', () => {
+        const data = Buffer.concat(buffer)
+        resolve(data)
+      })
+    })
+
+    return pdfBuffer
   }
 }

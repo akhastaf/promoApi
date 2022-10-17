@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, UseGuards, Req, ParseIntPipe, UploadedFile, Query, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, UseGuards, Req, ParseIntPipe, UploadedFile, Query, DefaultValuePipe, Res, ForbiddenException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,6 +17,7 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import { LogGuard } from 'src/auth/guardes/log.guards';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
+import { Response } from 'express';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -128,6 +129,21 @@ export class UserController {
   me(@Req() req: RequestWithAuth) {
     return this.userService.me(req.user);
   }
+  @Get('qr')
+  async getQr(@Req() req: RequestWithAuth, @Res() res: Response) {
+    if (req.user.role != UserRole.MANAGER)
+      throw new ForbiddenException('you are not store');
+    console.log('here');
+
+    const doc  = await this.userService.getQr(req.user);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=${req.user.name}.pdf`,
+      'Content-Length': doc.length,
+    })
+
+    res.end(doc)
+  }
 
   @Get()
   findAll(@Req() req: RequestWithAuth,
@@ -196,15 +212,5 @@ export class UserController {
   }
 
   
-  // // Customer
-  // @Get('subscribe/:id')
-  // async subscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<User> {
-  //   const ability = this.abilityFactory.defineAbility(req.user);
-  //   return await this.userService.subscribe(id, req.user, ability);
-  // }
-  // @Get('unsubscribe/:id')
-  // async unsubscribe(@Req() req: RequestWithAuth, @Param('id', ParseIntPipe) id: number): Promise<any> {
-  //   const ability = this.abilityFactory.defineAbility(req.user);
-  //   return await this.userService.unsubscribe(id, req.user, ability);
-  // }
+  
 }
