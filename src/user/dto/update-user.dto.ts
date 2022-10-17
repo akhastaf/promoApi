@@ -7,9 +7,13 @@ import { CreateUserDto } from './create-user.dto';
 
 export class UpdateUserDto {
     @ApiProperty()
-    @IsString()
     @IsOptional()
+    @IsString()
     name?: string;
+    @ApiProperty()
+    @IsOptional()
+    @IsEmail()
+    email?: string;
     @ApiProperty()
     @IsOptional()
     @IsPhoneNumber()
