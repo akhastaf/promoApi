@@ -18,7 +18,7 @@ import { LogGuard } from './guardes/log.guards';
 @ApiTags('Auth')
 @UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
     constructor (private authService: AuthService, private configService: ConfigService) {}
 

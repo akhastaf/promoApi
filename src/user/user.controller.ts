@@ -23,7 +23,7 @@ import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
 @UseGuards(JWTGuard)
 @UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('users')
+@Controller('api/users')
 export class UserController {
   constructor(private readonly userService: UserService,
               private readonly abilityFactory: CaslAbilityFactory) {}

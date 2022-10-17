@@ -11,7 +11,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 @ApiTags('Customers')
 @UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('customers')
+@Controller('api/customers')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService,
               private readonly abilityFactory: CaslAbilityFactory) {}

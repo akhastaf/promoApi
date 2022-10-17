@@ -19,7 +19,7 @@ import { LogGuard } from 'src/auth/guardes/log.guards';
 @UseGuards(LogGuard)
 @UseGuards(JWTGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('promotions')
+@Controller('api/promotions')
 export class PromotionController {
   constructor(private readonly promotionService: PromotionService,
               private readonly abilityFactory: CaslAbilityFactory) {}
