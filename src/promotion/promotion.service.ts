@@ -83,20 +83,21 @@ export class PromotionService {
     }
   }
   
-  async findOne(id: number, user: User, ability: AppAbility) : Promise<Promotion>{
+  async findAllForStore(id: number, option: IPaginationOptions, user: User, ability: AppAbility) :Promise<Pagination<Promotion>> {
     try {
-      const promotion = await this.promotionRepository.findOneOrFail({
-        where: {
-          id: id,
-        },
-        relations: ['user', 'user.customers']
-      });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, promotion);
-      return promotion;
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Promotion);
+      const qb = this.promotionRepository.createQueryBuilder('promotions');
+      qb.leftJoinAndSelect('promotions.user', 'store');
+      if (user.role === UserRole.ADMIN) {
+        qb.where('store.id = :id', { id: id });
+        // return await paginate<Promotion>(this.promotionRepository, option);
+      }
+      else if (user.role === UserRole.MANAGER){
+        qb.where('promotions.user = :userId', { userId: user.id});
+      }
+      return await paginate<Promotion>(qb, option);
     } catch (error) {
-      if (error instanceof ForbiddenException)
-        throw new ForbiddenException(error.message);
-      throw new BadRequestException('promotion dosent exist');
+      throw new ForbiddenException(error.message);
     }
   }
   

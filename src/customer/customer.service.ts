@@ -20,6 +20,8 @@ export class CustomerService {
   async create(id: number, createCustomerDto: CreateCustomerDto) : Promise<Customer> {
     try {
       const store = await this.userService.findOneById(id);
+      if (store.customers.find((customer) => customer.phone === createCustomerDto.phone))
+        throw new ForbiddenException('You are already subscribed to this store');
       console.log(store);
       if (store.id === id) {
         const customer = this.customerRepo.create(createCustomerDto);
@@ -47,26 +49,22 @@ export class CustomerService {
     const qb = this.customerRepo.createQueryBuilder('customers');
     return await paginate<Customer>(qb, option);
   }
-
-  async findOne(id: number, user: User, ability: AppAbility): Promise<Customer> {
+  async findAllForStore(id: number, option: IPaginationOptions, user: User, ability: AppAbility) : Promise<Pagination<Customer>> {
     try {
-      const customer = await this.customerRepo.findOneOrFail({
-        where: {
-          id,
-        },
-        relations: {
-          store: true,
-        }
-      });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, customer);
-      return customer;
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Customer);
+      const qb = this.customerRepo.createQueryBuilder('customers')
+            .leftJoinAndSelect('customers.store', 'store')
+            .where('store.id = :id', { id: id});
+      return await paginate<Customer>(qb, option);
     } catch (error) {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);
-      throw new NotFoundException('customer not found');
     }
-    
+    const qb = this.customerRepo.createQueryBuilder('customers');
+    return await paginate<Customer>(qb, option);
   }
+
+
 
   // update(id: number, updateCustomerDto: UpdateCustomerDto) {
   //   return `This action updates a #${id} customer`;

@@ -25,8 +25,10 @@ export class CustomerController {
   @ApiBearerAuth()
   @UseGuards(JWTGuard)
   @Get()
-  async findAll(@Req() req: RequestWithAuth ,@Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-  @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) {
+  async findAll(@Req() req: RequestWithAuth,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10)
+  {
     const ability = this.abilityFactory.defineAbility(req.user);
     return await this.customerService.findAll({ limit, page }, req.user, ability);
   }
@@ -34,9 +36,13 @@ export class CustomerController {
   @ApiBearerAuth()
   @UseGuards(JWTGuard)
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number, @Req() req: RequestWithAuth) {
+  async findAllForStore(@Param('id', ParseIntPipe) id: number, 
+                @Req() req: RequestWithAuth,
+                @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+      @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10)
+  {
     const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.customerService.findOne(id, req.user, ability);
+    return await this.customerService.findAllForStore(id, { limit, page }, req.user, ability);
   }
   
   // @Patch(':id')

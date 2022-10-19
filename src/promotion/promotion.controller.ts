@@ -62,9 +62,12 @@ export class PromotionController {
   }
   
   @Get(':id')
-  async findOne(@Req() req: RequestWithAuth,@Param('id', ParseIntPipe) id: number) {
+  async findAllForStore(@Req() req: RequestWithAuth,
+            @Param('id', ParseIntPipe) id: number,
+            @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+            @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) {
     const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.promotionService.findOne(id, req.user, ability);
+    return await this.promotionService.findAllForStore(id, { limit, page }, req.user, ability);
   }
   
   @Patch(':id')

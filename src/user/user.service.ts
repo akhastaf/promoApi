@@ -56,7 +56,9 @@ export class UserService {
                 
     try {
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User);
-      const qb = this.userRepository.createQueryBuilder('user');
+      const qb = this.userRepository.createQueryBuilder('user')
+                .leftJoinAndSelect('user.customers', 'customers')
+                .leftJoinAndSelect('user.promotions', 'promotions');
       if (user.role === UserRole.ADMIN) {
         if (role === UserRole.ALL)
           return await paginate<User>(this.userRepository, option);
@@ -230,6 +232,9 @@ export class UserService {
         where: {
           id,
           role: role
+        },
+        relations: {
+          customers: true,
         }
       });
       return user;
