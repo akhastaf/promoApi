@@ -12,12 +12,13 @@ import { ResetDTO } from 'src/auth/dto/reset.dto';
 import { ForbiddenError } from '@casl/ability';
 import { ConfigService } from '@nestjs/config';
 import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { IPaginationOptions, Pagination, paginate} from 'nestjs-typeorm-paginate';
 import { MailService } from 'src/mail/mailService';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
 import * as PDFDocument from 'pdfkit'
 import * as qrcode from 'qrcode'
+// import { paginate } from './paginate';
 
 @Injectable()
 export class UserService {
@@ -55,26 +56,51 @@ export class UserService {
                 ability: AppAbility): Promise<Pagination<User>> {
                 
     try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User);
-      const qb = this.userRepository.createQueryBuilder('user')
-                .leftJoinAndSelect('user.customers', 'customers')
-                .leftJoinAndSelect('user.promotions', 'promotions');
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User); 
+      let orderOption : any;
+      if (order === 'email')
+        orderOption= {email: 'ASC'};
+      else if (order === 'name')
+        orderOption= {name: 'ASC'};
+
       if (user.role === UserRole.ADMIN) {
         if (role === UserRole.ALL)
           return await paginate<User>(this.userRepository, option);
-        qb.where('user.role = :role', { role: role})
-          .orderBy(order, 'ASC');
+        return await paginate<User>(this.userRepository, option, {
+          where: {
+            role: role,
+          },
+          relations: {
+            customers: true,
+            promotions: true,
+          },
+          order: orderOption
+        });
         }
         else if (user.role === UserRole.MODERATOR) {
-          console.log(user);
-          qb.where('user.role = :role', { role: UserRole.MANAGER })
-          .orderBy(order, 'ASC');
+          return await paginate<User>(this.userRepository, option, {
+            where: {
+              role: UserRole.MANAGER,
+            },
+            relations: {
+              customers: true,
+              promotions: true,
+            },
+            order: orderOption
+          });
         }
         else if (user.role === UserRole.MANAGER) {
-          qb.where('user.id = :id', { id: user.id})
-          .orderBy(order, 'ASC');
+          return await paginate<User>(this.userRepository, option, {
+            where: {
+              id: user.id,
+            },
+            relations: {
+              customers: true,
+              promotions: true,
+            },
+            order: orderOption,
+          });
         }
-        return await paginate<User>(qb, option);
     } catch (error) {
       if (error instanceof ForbiddenError)
         throw new ForbiddenException(error.message);

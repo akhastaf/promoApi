@@ -70,7 +70,9 @@ export class AuthController {
     @Post('reset')
     async reset(@Res() res: Response,@Query('token') token: string, @Body() resetDto: ResetDTO) {
         try {
+            // console.log(resetDto.)
             await this.authService.reset(token, resetDto);
+            res.status(200).send();
             //res.redirect(`${this.configService.get('CLIENT_HOST')}/login`)
         } catch (error) {
             throw new ForbiddenException(error.message)
