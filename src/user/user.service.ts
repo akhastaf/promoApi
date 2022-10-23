@@ -41,7 +41,8 @@ export class UserService {
       createUserDto.password = Math.random().toString(36).slice(-8);
       console.log('password: ',createUserDto.password);
       const newuser: User = this.userRepository.create(createUserDto);
-      newuser.salesman = user;
+      if (newuser.role === UserRole.STORE)
+        newuser.salesman = user;
       const createdUser = await this.userRepository.save(newuser);
       await this.mailService.sendStoreCreation(createdUser.email, createUserDto.password, createdUser.name);
       return createdUser;

@@ -30,8 +30,10 @@ export class AuthController {
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);
         res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });
-        const { password, token, ...salesman} = tokens.user.salesman;
-        tokens.user.salesman = salesman;
+        if (tokens.user.salesman) {
+            const { password, token, ...salesman} = tokens.user.salesman;
+            tokens.user.salesman = salesman;
+        }
         res.send({ user: tokens.user, access_token: tokens.access_token });
     }
 
