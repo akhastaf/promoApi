@@ -30,8 +30,9 @@ export class AuthController {
         const expireIn = new Date();
         expireIn.setMonth(expireIn.getMonth() + 3);
         res.cookie('refresh_token', tokens.refresh_token, { httpOnly: true, expires: expireIn });
-        const { password, token, ...user} = req.user;
-        res.send({ user, access_token: tokens.access_token });
+        const { password, token, ...salesman} = tokens.user.salesman;
+        tokens.user.salesman = salesman;
+        res.send({ user: tokens.user, access_token: tokens.access_token });
     }
 
     @UseGuards(JWTGuard)
@@ -39,11 +40,6 @@ export class AuthController {
     async logout(@Req() req: RequestWithAuth , @Res() res: Response) : Promise<void> {
         res.clearCookie('refresh_token');
         res.status(200).send();
-    }
-
-    @Post('register')
-    async register(@Body() registerCustomerDto: RegisterCustomerDto, @I18n() i18n: I18nContext): Promise<User> {
-        return await this.authService.register(registerCustomerDto, i18n);
     }
 
     @Get('refresh_token')

@@ -39,25 +39,25 @@ export class CaslAbilityFactory {
             can(Actions.Read, Customer);
             can(Actions.ReadOne, Customer);
             can(Actions.Delete, Customer);
-        } else if (user.role === UserRole.MODERATOR) {
+        } else if (user.role === UserRole.SALESMAN) {
             can(Actions.Manage, User, { id: { $eq: user.id }});
-            cannot(Actions.Manage, Promotion).because('you are an moderator');
+            cannot(Actions.Manage, Promotion).because('you are an salesman');
             // cannot(Actions.Subscribe, User).because('you are an admin');
             // cannot(Actions.UnSubscribe, User).because('you are an admin');
-            cannot(Actions.Manage, Customer).because('you are a moderator');
+            cannot(Actions.Manage, Customer).because('you are a salesman');
             can(Actions.Create, User);
             can(Actions.Read, User);
-            can(Actions.Update, User, { role: { $eq : UserRole.MANAGER } });
-            can(Actions.ReadOne, User, { role: { $eq : UserRole.MANAGER }});
+            can(Actions.Update, User, { role: { $eq : UserRole.STORE } });
+            can(Actions.ReadOne, User, { role: { $eq : UserRole.STORE }});
             cannot(Actions.ReadOne, User, { role: UserRole.ADMIN}).because('you are not admin');
         }
-        else if (user.role === UserRole.MANAGER) {
+        else if (user.role === UserRole.STORE) {
             can(Actions.Manage, Promotion, { 'user.id': { $eq: user.id }})
             can(Actions.Manage, User, { id: { $eq: user.id }})
             can(Actions.Read, Customer);
             can(Actions.Delete, Customer, { 'store.id' : { $eq: user.id } });
             cannot(Actions.Manage, Promotion, { 'user.id': { $ne: user.id }})
-            // cannot(Actions.Subscribe, User).because('you are an manager');
+            // cannot(Actions.Subscribe, User).because('you are an store');
             // cannot(Actions.UnSubscribe, User).because('you are an manger');
             cannot(Actions.Read, User).because('you are an manger');
         }

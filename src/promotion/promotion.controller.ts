@@ -1,17 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseIntPipe, ForbiddenException, UploadedFile, Query, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseIntPipe, Query, DefaultValuePipe } from '@nestjs/common';
 import { PromotionService } from './promotion.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RequestWithAuth } from 'src/types';
 import { JWTGuard } from 'src/auth/guardes/jwt.guard';
-import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Promotion } from './entities/promotion.entity';
-import { ForbiddenError } from '@casl/ability';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { SharpPipe } from './pipes/sharp.pipe';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { CheckAbilities } from 'src/casl/decorators/abilities.decorator';
 import { LogGuard } from 'src/auth/guardes/log.guards';
 
 @ApiTags('Promotions')
@@ -21,34 +16,11 @@ import { LogGuard } from 'src/auth/guardes/log.guards';
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('api/promotions')
 export class PromotionController {
-  constructor(private readonly promotionService: PromotionService,
-              private readonly abilityFactory: CaslAbilityFactory) {}
+  constructor(private readonly promotionService: PromotionService) {}
 
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       title: {
-  //         type: 'string',
-  //         format: 'string',
-  //       },
-  //       description: {
-  //         type: 'string',
-  //         format: 'string',
-  //       },
-  //       image: {
-  //         type: 'string',
-  //         format: 'binary',
-  //       },
-  //     }
-  //   }
-  // })
-  // @ApiConsumes('multipart/form-data')
   @Post()
-  // @UseInterceptors(FileInterceptor('image'))
   create(@Req() req: RequestWithAuth, @Body() createPromotionDto: CreatePromotionDto) {
-     const ability = this.abilityFactory.defineAbility(req.user);
-    return this.promotionService.create(createPromotionDto, req.user, ability);
+    return this.promotionService.create(createPromotionDto, req.user);
   }
   
   @Get()
@@ -56,9 +28,8 @@ export class PromotionController {
           @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
           @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) : Promise<Pagination<Promotion>>
   {
-    limit = limit > 100 ? 100 : limit;  
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.promotionService.findAll(req.user, { limit, page }, ability);
+    limit = limit > 100 ? 100 : limit;
+    return this.promotionService.findAll(req.user, { limit, page });
   }
   
   @Get(':id')
@@ -66,21 +37,18 @@ export class PromotionController {
             @Param('id', ParseIntPipe) id: number,
             @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
             @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return await this.promotionService.findAllForStore(id, { limit, page }, req.user, ability);
+    return await this.promotionService.findAllForStore(id, { limit, page }, req.user);
   }
   
   @Patch(':id')
   async update(@Req() req: RequestWithAuth,
               @Param('id', ParseIntPipe) id: number,
               @Body() updatePromotionDto: UpdatePromotionDto) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.promotionService.update(id, updatePromotionDto, req.user, ability);
+    return this.promotionService.update(id, updatePromotionDto, req.user);
   }
       
   @Delete(':id')
   remove(@Req() req: RequestWithAuth,@Param('id', ParseIntPipe) id: number) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.promotionService.remove(id, ability);
+    return this.promotionService.remove(id, req.user);
   }
 }

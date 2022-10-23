@@ -2,37 +2,36 @@ import { UserRole } from "src/user/entities/user.entity";
 
 export const Users = [
     {
-        name: 'manager1',//process.env.ADMIN_FIRST_NAME,
-        email: 'manager1@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'manager',//process.env.ADMIN_PASSWORD
-        role: UserRole.MANAGER,
+        name: 'store1',//process.env.ADMIN_FIRST_NAME,
+        email: 'store1@store.com',//process.env.ADMIN_EMAIL,
+        password: 'store',//process.env.ADMIN_PASSWORD
+        role: UserRole.STORE,
         isActive: true,
     },
     {
-        name: 'manager2',//process.env.ADMIN_FIRST_NAME,
-        email: 'manager2@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'manager',//process.env.ADMIN_PASSWORD
-        role: UserRole.MANAGER,
+        name: 'store2',//process.env.ADMIN_FIRST_NAME,
+        email: 'store2@store.com',//process.env.ADMIN_EMAIL,
+        password: 'store',//process.env.ADMIN_PASSWORD
+        role: UserRole.STORE,
         isActive: true,
     },
     {
-        name: 'manager3',//process.env.ADMIN_FIRST_NAME,
-        email: 'manager3@manager.com',//process.env.ADMIN_EMAIL,
-        password: 'manager',//process.env.ADMIN_PASSWORD
-        role: UserRole.MANAGER,
+        name: 'store3',//process.env.ADMIN_FIRST_NAME,
+        email: 'store3@store.com',//process.env.ADMIN_EMAIL,
+        password: 'store',//process.env.ADMIN_PASSWORD
+        role: UserRole.STORE,
         isActive: false,
     },
     {
-        name: 'modeartor1',//process.env.ADMIN_FIRST_NAME,
-        email: 'modeartor1@modeartor.com',//process.env.ADMIN_EMAIL,
-        password: 'modeartor',//process.env.ADMIN_PASSWORD
-        role: UserRole.MODERATOR,
-        isActive: true,
+        name: 'salesman1',//process.env.ADMIN_FIRST_NAME,
+        email: 'salesman1@salesman.com',//process.env.ADMIN_EMAIL,
+        password: 'salesman',//process.env.ADMIN_PASSWORD
+        role: UserRole.SALESMAN,
     },
     {
-        name: 'moderator2',//process.env.ADMIN_FIRST_NAME,
-        email: 'moderator2@moderator.com',//process.env.ADMIN_EMAIL,
-        password: 'moderator',//process.env.ADMIN_PASSWORD
-        role: UserRole.MODERATOR,
+        name: 'salesman2',//process.env.ADMIN_FIRST_NAME,
+        email: 'salesman2@salesman.com',//process.env.ADMIN_EMAIL,
+        password: 'salesman',//process.env.ADMIN_PASSWORD
+        role: UserRole.SALESMAN,
     },
 ]

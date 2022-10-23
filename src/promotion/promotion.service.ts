@@ -1,12 +1,10 @@
 import { ForbiddenError } from '@casl/ability';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TwilioService } from 'nestjs-twilio';
-// import { TwilioModule } from 'nestjs-twilio';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { identity } from 'rxjs';
-import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
+import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository, UpdateResult } from 'typeorm';
@@ -19,12 +17,14 @@ export class PromotionService {
   constructor (
       private configService: ConfigService,
       private twilioService: TwilioService,
+      private readonly abilityFactory: CaslAbilityFactory,
       @InjectRepository(Promotion) private promotionRepository: Repository<Promotion>,
       @InjectRepository(Customer) private customerRepo: Repository<Customer>,) {}
   
   
-      async create(createPromotionDto: CreatePromotionDto, user: User, ability: AppAbility): Promise<Promotion> {
+      async create(createPromotionDto: CreatePromotionDto, user: User) {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Create, Promotion);
       const promo = this.promotionRepository.create(createPromotionDto);
       promo.user = user;
@@ -36,24 +36,25 @@ export class PromotionService {
           },
         }
       });
-      console.log(customers[0]);
       if (customers.length) {
         const service = this.twilioService.client.notify.services(this.configService.get('TWILIO_NOTIFY_SID'));
         const bindings = customers.map(customer => {
           return JSON.stringify({ binding_type: 'sms', address: customer.phone });
         });
-        
+        let not;
         service.notifications
           .create({
             toBinding: bindings,
             body:  `${promotion.title} ${promotion.description}`,
           })
           .then(notification => {
-            console.log(notification);
+            not = notification;
+            console.log('notifactions', notification);
           })
           .catch(err => {
             console.error(err);
           });
+          return not;
       }
       return promotion;
     } catch (error) {
@@ -63,10 +64,10 @@ export class PromotionService {
   
   async findAll(user: User,
                 option: IPaginationOptions,
-                ability: AppAbility,
                 ) : Promise<Pagination<Promotion>> 
   {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Promotion);
       const qb = this.promotionRepository.createQueryBuilder('promotions');
       qb.leftJoinAndSelect('promotions.user', 'store');
@@ -74,7 +75,7 @@ export class PromotionService {
       if (user.role === UserRole.ADMIN) {
         return await paginate<Promotion>(this.promotionRepository, option);
       }
-      else if (user.role === UserRole.MANAGER){
+      else if (user.role === UserRole.STORE){
         qb.where('promotions.user = :userId', { userId: user.id});
         return await paginate<Promotion>(qb, option);
       }
@@ -83,8 +84,9 @@ export class PromotionService {
     }
   }
   
-  async findAllForStore(id: number, option: IPaginationOptions, user: User, ability: AppAbility) :Promise<Pagination<Promotion>> {
+  async findAllForStore(id: number, option: IPaginationOptions, user: User) :Promise<Pagination<Promotion>> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Promotion);
       const qb = this.promotionRepository.createQueryBuilder('promotions');
       qb.leftJoinAndSelect('promotions.user', 'store');
@@ -92,7 +94,7 @@ export class PromotionService {
         qb.where('store.id = :id', { id: id });
         // return await paginate<Promotion>(this.promotionRepository, option);
       }
-      else if (user.role === UserRole.MANAGER){
+      else if (user.role === UserRole.STORE){
         qb.where('promotions.user = :userId', { userId: user.id});
       }
       return await paginate<Promotion>(qb, option);
@@ -101,8 +103,9 @@ export class PromotionService {
     }
   }
   
-  async update(id: number, updatePromotionDto: UpdatePromotionDto, user: User, ability: AppAbility) : Promise<UpdateResult> {
+  async update(id: number, updatePromotionDto: UpdatePromotionDto, user: User) : Promise<UpdateResult> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       const promotion = await this.promotionRepository.findOneOrFail({
         where: {
           id,
@@ -118,8 +121,9 @@ export class PromotionService {
       }
     }
     
-  async remove(id: number, ability: AppAbility) : Promise<Promotion> {
+  async remove(id: number, user: User) : Promise<Promotion> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       const promotion = await this.promotionRepository.findOneOrFail({
         where: {
           id,
@@ -138,23 +142,23 @@ export class PromotionService {
       }
   }
       
-  async getPromotionsForCustomer(customer: User, ability: AppAbility): Promise<Promotion[]> {
-    try {
-      ForbiddenError.from(ability).throwUnlessCan(Actions.Update, Promotion);
-      return await this.promotionRepository.find({
-        where: {
-          user: {
-            customers: {
-              id: customer.id
-            }
-          }
-        },
-        relations: {
-          user: true,
-        }
-      });
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
-  }
+  // async getPromotionsForCustomer(customer: User, ability: AppAbility): Promise<Promotion[]> {
+  //   try {
+  //     ForbiddenError.from(ability).throwUnlessCan(Actions.Update, Promotion);
+  //     return await this.promotionRepository.find({
+  //       where: {
+  //         user: {
+  //           customers: {
+  //             id: customer.id
+  //           }
+  //         }
+  //       },
+  //       relations: {
+  //         user: true,
+  //       }
+  //     });
+  //   } catch (error) {
+  //     throw new ForbiddenException(error.message);
+  //   }
+  // }
 }

@@ -36,7 +36,7 @@ export class CreateUserDto {
     // password_confirmation: string;
     @ApiProperty()
     @IsString()
-    // @Contains('STORE' || 'MODERATOR')
+    // @Contains('STORE' || 'SALESMAN')
     @IsEnum(UserRole)
     role: string;
     @ApiProperty()

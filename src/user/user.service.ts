@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ResetDTO } from 'src/auth/dto/reset.dto';
 import { ForbiddenError } from '@casl/ability';
 import { ConfigService } from '@nestjs/config';
-import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
+import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { IPaginationOptions, Pagination, paginate} from 'nestjs-typeorm-paginate';
 import { MailService } from 'src/mail/mailService';
 import { UpdateMeDto } from './dto/update-me.dto';
@@ -25,26 +25,29 @@ export class UserService {
   constructor(private jwtService: JwtService,
               private mailService: MailService,
               private configService: ConfigService,
+              private readonly abilityFactory: CaslAbilityFactory,
             @InjectRepository(User) private userRepository : Repository<User>,) {}
 
 
 
   async create(createUserDto: CreateUserDto | RegisterCustomerDto,
-              i18n: I18nContext,
-              ability?: AppAbility): Promise<any> {
+              user: User,
+              i18n: I18nContext): Promise<any> {
     try {
       console.log(createUserDto);
-      if (ability)
-        ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
+
+      const ability = this.abilityFactory.defineAbility(user);
+      ForbiddenError.from(ability).throwUnlessCan(Actions.Create, User);
       createUserDto.password = Math.random().toString(36).slice(-8);
       console.log('password: ',createUserDto.password);
       const newuser: User = this.userRepository.create(createUserDto);
-      
-      const user = await this.userRepository.save(newuser);
-      await this.mailService.sendStoreCreation(user.email, createUserDto.password, user.name);
-      return user;
+      newuser.salesman = user;
+      const createdUser = await this.userRepository.save(newuser);
+      await this.mailService.sendStoreCreation(createdUser.email, createUserDto.password, createdUser.name);
+      return createdUser;
     } catch (error) {
-      console.log(typeof error);
+      if (error.code === '23505')
+        throw new BadRequestException(['email already exists']);
       throw new ForbiddenException();
     }
   }
@@ -52,10 +55,10 @@ export class UserService {
   async findAll(user: User,
                 option: IPaginationOptions,
                 role: string,
-                order: string,
-                ability: AppAbility): Promise<Pagination<User>> {
+                order: string): Promise<Pagination<User>> {
                 
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, User); 
       let orderOption : any;
       if (order === 'email')
@@ -73,23 +76,29 @@ export class UserService {
           relations: {
             customers: true,
             promotions: true,
+            stores: true,
+            salesman: true,
           },
           order: orderOption
         });
         }
-        else if (user.role === UserRole.MODERATOR) {
+        else if (user.role === UserRole.SALESMAN) {
           return await paginate<User>(this.userRepository, option, {
             where: {
-              role: UserRole.MANAGER,
+              role: UserRole.STORE,
+              salesman: {
+                id: user.id,
+              }
             },
             relations: {
               customers: true,
               promotions: true,
+              salesman: true,
             },
             order: orderOption
           });
         }
-        else if (user.role === UserRole.MANAGER) {
+        else if (user.role === UserRole.STORE) {
           return await paginate<User>(this.userRepository, option, {
             where: {
               id: user.id,
@@ -97,6 +106,7 @@ export class UserService {
             relations: {
               customers: true,
               promotions: true,
+              salesman: true,
             },
             order: orderOption,
           });
@@ -108,15 +118,15 @@ export class UserService {
     
   }
 
-  async findOne(id: number, ability: AppAbility): Promise<User> {
+  async findOne(id: number, user : User): Promise<User> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       const userTofind = await this.userRepository.findOneOrFail({
         where: {
           id,
         },
         relations: {
           promotions: true,
-          // store: true,
           customers: true,
         }
       });
@@ -129,9 +139,9 @@ export class UserService {
     }
   }
   
-  async update(id: number, updateUserDto: UpdateUserDto, ability: AppAbility) : Promise<UpdateResult> {
+  async update(id: number, updateUserDto: UpdateUserDto, user: User) : Promise<UpdateResult> {
     try {
-      
+      const ability = this.abilityFactory.defineAbility(user);
       const userToupdate = await this.userRepository.findOneOrFail({
         where: {
           id,
@@ -145,7 +155,7 @@ export class UserService {
       throw new NotFoundException('user is not found');
       }
     }
-  async updateMeSecurity(user: User, updateMeDto: UpdateMeSecurityDto, ability: AppAbility) : Promise<UpdateResult> {
+  async updateMeSecurity(user: User, updateMeDto: UpdateMeSecurityDto) : Promise<UpdateResult> {
     try {
       
       // const userToupdate = await this.userRepository.findOneOrFail({
@@ -153,6 +163,7 @@ export class UserService {
       //     id: user.id,
       //   }
       // });
+      const ability = this.abilityFactory.defineAbility(user);
       if (updateMeDto.password) {
         const valid = await bcrypt.compare(updateMeDto.password, user.password);
         if (!valid)
@@ -167,8 +178,9 @@ export class UserService {
       throw new NotFoundException(error.message);
       }
     }
-  async updateMe(user: User, updateMeDto: UpdateMeDto, ability: AppAbility) : Promise<UpdateResult> {
+  async updateMe(user: User, updateMeDto: UpdateMeDto) : Promise<UpdateResult> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       console.log(updateMeDto);
       const userToupdate = await this.userRepository.findOneOrFail({
         where: {
@@ -188,9 +200,10 @@ export class UserService {
       return user;
     }
     
-    async remove(id: number, ability: AppAbility) : Promise<User> {
+    async remove(id: number, user: User) : Promise<User> {
       try {
-        const userToremove = await this.findOne(id, ability);
+        const ability = this.abilityFactory.defineAbility(user);
+        const userToremove = await this.findOne(id, user);
         ForbiddenError.from(ability).throwUnlessCan(Actions.Delete, userToremove);
         return this.userRepository.remove(userToremove);
       } catch (error) {
@@ -245,6 +258,9 @@ export class UserService {
       const user = await this.userRepository.findOneOrFail({
         where: {
           email: email,
+        },
+        relations: {
+          salesman: true,
         }
       });
       return user;

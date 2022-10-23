@@ -26,8 +26,7 @@ import { Response } from 'express';
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('api/users')
 export class UserController {
-  constructor(private readonly userService: UserService,
-              private readonly abilityFactory: CaslAbilityFactory) {}
+  constructor(private readonly userService: UserService) {}
               
   @ApiBody({
     schema: {
@@ -76,9 +75,8 @@ export class UserController {
   @Body() createUserDto: CreateUserDto,
   @I18n() i18n: I18nContext) {
     if (avatar)
-    createUserDto.avatar = avatar;
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.create(createUserDto, i18n, ability);
+      createUserDto.avatar = avatar;
+    return this.userService.create(createUserDto, req.user, i18n);
   }
 
   @ApiBody({
@@ -116,14 +114,12 @@ export class UserController {
         @Body() upadateMeDto: UpdateMeDto) {
     if (avatar)
     upadateMeDto.avatar = avatar;
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.updateMe(req.user, upadateMeDto, ability);
+    return this.userService.updateMe(req.user, upadateMeDto);
   }
   @Patch('me/security')
   updateMeSecurity(@Req() req: RequestWithAuth ,
         @Body() updateMeDto: UpdateMeSecurityDto) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.updateMeSecurity(req.user, updateMeDto, ability);
+    return this.userService.updateMeSecurity(req.user, updateMeDto);
   }
   @Get('me')
   me(@Req() req: RequestWithAuth) {
@@ -131,17 +127,14 @@ export class UserController {
   }
   @Get('qr')
   async getQr(@Req() req: RequestWithAuth, @Res() res: Response) {
-    if (req.user.role != UserRole.MANAGER)
+    if (req.user.role != UserRole.STORE)
       throw new ForbiddenException('you are not store');
-    console.log('here');
-
     const doc  = await this.userService.getQr(req.user);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename=${req.user.name}.pdf`,
       'Content-Length': doc.length,
     })
-
     res.end(doc)
   }
 
@@ -154,14 +147,12 @@ export class UserController {
   {
     limit = limit > 100 ? 100 : limit;
     order = order ?? 'email';
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.findAll(req.user, { limit, page }, role, order, ability);
+    return this.userService.findAll(req.user, { limit, page }, role, order);
   }
   
   @Get(':id')
   findOne(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.findOne(id, ability);
+    return this.userService.findOne(id, req.user);
   }
   
   @ApiBody({
@@ -200,15 +191,13 @@ export class UserController {
         @Body() updateUserDto: UpdateUserDto) {
     if (avatar)
       updateUserDto.avatar = avatar;
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.update(id, updateUserDto, ability);
+    return this.userService.update(id, updateUserDto, req.user);
   }
   
   
   @Delete(':id')
   remove(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
-    const ability = this.abilityFactory.defineAbility(req.user);
-    return this.userService.remove(id, ability);
+    return this.userService.remove(id, req.user);
   }
 
   

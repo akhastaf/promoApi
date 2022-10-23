@@ -11,7 +11,7 @@ export class Customer {
     phone: string;
     @Column({ default: true })
     isActive: boolean;
-    @ManyToOne(() => User, (user) => user.customers, { onDelete: 'SET NULL' })
+    @ManyToOne(() => User, (user) => user.customers, { onDelete: 'CASCADE' })
     store: User;
     @CreateDateColumn()
     createdAt: Date;

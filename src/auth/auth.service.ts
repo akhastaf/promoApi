@@ -1,20 +1,16 @@
-import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
-import { LoginUserDto } from './dto/login-user.dto';
-import { RegisterCustomerDto } from './dto/register-customer.dto';
 import { ResetDTO } from './dto/reset.dto';
 import { ForgetDto } from './dto/forget.dto';
 import { MailService } from 'src/mail/mailService';
-import { I18nContext } from 'nestjs-i18n';
 import { Payload } from 'src/types';
 
 @Injectable()
 export class AuthService {
-    private logger: Logger = new Logger(AuthService.name);
 
     constructor (private configService: ConfigService,
             private userService: UserService,
@@ -34,7 +30,8 @@ export class AuthService {
 
     async login(user: User): Promise<any> {
         const payload = { email: user.email, sub: user.id };
-        return { access_token: this.jwtService.sign(payload),
+        const {password, token, ...user1} = user; 
+        return { user: user1, access_token: this.jwtService.sign(payload),
                 refresh_token: this.jwtService.sign(payload, {
                     secret: this.configService.get('JWT_SECRET'),
                     expiresIn: '90d'
@@ -52,10 +49,6 @@ export class AuthService {
         } catch (error) {
             throw new ForbiddenException(error.message);
         }
-    }
-
-    async register(registerCustomerDto: RegisterCustomerDto, i18n : I18nContext) : Promise<User> {
-        return this.userService.create(registerCustomerDto ,i18n);
     }
 
     async forget(forgetDto: ForgetDto) {

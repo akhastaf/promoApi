@@ -4,7 +4,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { JWTGuard } from 'src/auth/guardes/jwt.guard';
-import { Actions, AppAbility } from 'src/casl/casl-ability.factory';
+import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { User, UserRole } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
@@ -15,6 +15,7 @@ import { Customer } from './entities/customer.entity';
 @Injectable()
 export class CustomerService {
   constructor(private userService: UserService,
+              private readonly abilityFactory: CaslAbilityFactory,
               @InjectRepository(Customer) private customerRepo: Repository<Customer>,) {}
 
   async create(id: number, createCustomerDto: CreateCustomerDto) : Promise<Customer> {
@@ -34,11 +35,12 @@ export class CustomerService {
     }
   }
   
-  async findAll(option: IPaginationOptions, user: User, ability: AppAbility) : Promise<Pagination<Customer>> {
+  async findAll(option: IPaginationOptions, user: User) : Promise<Pagination<Customer>> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Customer);
       const qb = this.customerRepo.createQueryBuilder('customers');
-      if (user.role === UserRole.MANAGER)
+      if (user.role === UserRole.STORE)
         qb.leftJoinAndSelect('customers.store', 'store')
           .where('store.id = :userId', { userId: user.id});
       return await paginate<Customer>(qb, option);
@@ -49,8 +51,9 @@ export class CustomerService {
     const qb = this.customerRepo.createQueryBuilder('customers');
     return await paginate<Customer>(qb, option);
   }
-  async findAllForStore(id: number, option: IPaginationOptions, user: User, ability: AppAbility) : Promise<Pagination<Customer>> {
+  async findAllForStore(id: number, option: IPaginationOptions, user: User) : Promise<Pagination<Customer>> {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Read, Customer);
       const qb = this.customerRepo.createQueryBuilder('customers')
             .leftJoinAndSelect('customers.store', 'store')
@@ -64,14 +67,9 @@ export class CustomerService {
     return await paginate<Customer>(qb, option);
   }
 
-
-
-  // update(id: number, updateCustomerDto: UpdateCustomerDto) {
-  //   return `This action updates a #${id} customer`;
-  // }
-
-  async remove(id: number, user: User, ability: AppAbility) {
+  async remove(id: number, user: User) {
     try {
+      const ability = this.abilityFactory.defineAbility(user);
       const customer = await this.customerRepo.findOneOrFail({
         where: {
           id,
