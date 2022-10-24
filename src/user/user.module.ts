@@ -10,7 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Promotion]),ConfigModule, CaslModule, PromotionModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([User, Promotion]),ConfigModule, CaslModule, JwtModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService]

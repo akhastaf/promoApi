@@ -53,6 +53,8 @@ export class User {
     token: string;
     @Column({ default: false })
     isActive: boolean;
+    @Column({ default: 0 })
+    count: number;
     @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];
     @OneToMany(() => Customer, (customer) => customer.store, { onDelete: 'SET NULL' })

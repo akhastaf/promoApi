@@ -7,6 +7,7 @@ import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginat
 import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { User, UserRole } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -18,6 +19,7 @@ export class PromotionService {
       private configService: ConfigService,
       private twilioService: TwilioService,
       private readonly abilityFactory: CaslAbilityFactory,
+      private userService : UserService,
       @InjectRepository(Promotion) private promotionRepository: Repository<Promotion>,
       @InjectRepository(Customer) private customerRepo: Repository<Customer>,) {}
   
@@ -47,9 +49,8 @@ export class PromotionService {
             toBinding: bindings,
             body:  `${promotion.title} ${promotion.description}`,
           })
-          .then(notification => {
-            not = notification;
-            console.log('notifactions', notification);
+          .then(async (notification) => {
+            await this.userService.updateCount(user, bindings.length);
           })
           .catch(err => {
             console.error(err);

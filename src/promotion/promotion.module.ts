@@ -7,6 +7,7 @@ import { CaslModule } from 'src/casl/casl.module';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TwilioModule } from 'nestjs-twilio';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Promotion, Customer]), CaslModule, ConfigModule,
@@ -18,6 +19,7 @@ import { TwilioModule } from 'nestjs-twilio';
         authToken: cfg.get('TWILIO_AUTH_TOKEN'),
       }),
     }),
+    UserModule
   ],
   controllers: [PromotionController],
   providers: [PromotionService/*, PushService*/],

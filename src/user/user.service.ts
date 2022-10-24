@@ -16,9 +16,8 @@ import { IPaginationOptions, Pagination, paginate} from 'nestjs-typeorm-paginate
 import { MailService } from 'src/mail/mailService';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
-import * as PDFDocument from 'pdfkit'
-import * as qrcode from 'qrcode'
-// import { paginate } from './paginate';
+import * as PDFDocument from 'pdfkit';
+import * as qrcode from 'qrcode';
 
 @Injectable()
 export class UserService {
@@ -313,5 +312,9 @@ export class UserService {
     })
 
     return pdfBuffer
+  }
+
+  async updateCount(user:User, count: number) {
+    return await this.userRepository.update(user.id, { count: user.count + count });  
   }
 }
