@@ -197,7 +197,12 @@ export class UserService {
     }
 
     me(user: User) {
-      return user;
+      if (user.isActive)
+        return user;
+      if (user.role === UserRole.SALESMAN)
+        throw new ForbiddenException('Your account is inactive contact the admin');
+
+      throw new ForbiddenException('Your account is inactive contact the salesman');
     }
     
     async remove(id: number, user: User) : Promise<User> {
@@ -265,7 +270,7 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new ForbiddenException();
+      throw new ForbiddenException('email or password is incorrect');
     }
   }
   async findOneById(id: number, role?: any) : Promise<User> {
