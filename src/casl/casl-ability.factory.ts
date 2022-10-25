@@ -42,7 +42,7 @@ export class CaslAbilityFactory {
         } else if (user.role === UserRole.SALESMAN) {
             can(Actions.Manage, User, { id: { $eq: user.id }});
             cannot(Actions.Manage, Promotion).because('you are an salesman');
-            
+
             // cannot(Actions.Subscribe, User).because('you are an admin');
             // cannot(Actions.UnSubscribe, User).because('you are an admin');
             cannot(Actions.Manage, Customer).because('you are a salesman');
