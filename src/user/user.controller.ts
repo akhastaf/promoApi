@@ -113,7 +113,7 @@ export class UserController {
         @UploadedFile(SharpPipe) avatar: string,
         @Body() upadateMeDto: UpdateMeDto) {
     if (avatar)
-    upadateMeDto.avatar = avatar;
+      upadateMeDto.avatar = avatar;
     return this.userService.updateMe(req.user, upadateMeDto);
   }
   @Patch('me/security')
