@@ -18,6 +18,7 @@ import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateMeSecurityDto } from './dto/update-me-security.dto';
 import * as PDFDocument from 'pdfkit';
 import * as qrcode from 'qrcode';
+import { Twilio } from 'twilio';
 
 @Injectable()
 export class UserService {
@@ -41,14 +42,36 @@ export class UserService {
       console.log('password: ',createUserDto.password);
       const newuser: User = this.userRepository.create(createUserDto);
       if (newuser.role === UserRole.STORE)
+      {
         newuser.salesman = user;
+        const client = new Twilio(this.configService.get('TWILIO_ACCOUNT_SID'), this.configService.get('TWILIO_AUTH_TOKEN'));
+        const availablePhones = await client.availablePhoneNumbers('US').local.list({ areaCode: 516, limit: 1 });
+        console.log(availablePhones);
+        if (availablePhones.length) {
+          console.log(availablePhones[0].phoneNumber);
+          const phoneNumber = await client.incomingPhoneNumbers.create({phoneNumber: availablePhones[0].phoneNumber});
+          console.log('phonenumber',phoneNumber);
+          newuser.number_twilio = phoneNumber.phoneNumber;
+          newuser.number_sid = phoneNumber.sid;
+          const service = await client.messaging.v1.services.create({ friendlyName: `${newuser.name}_service`, usecase: 'notifications'});
+          console.log('service ', service);
+          newuser.service_sid = service.sid;
+          newuser.service_name = service.friendlyName;
+          await client.messaging.v1.services(service.sid).phoneNumbers.create({ phoneNumberSid: newuser.number_sid });
+          const notify = await client.notify.v1.services.create({ friendlyName: `${newuser.name}_notify`, messagingServiceSid: newuser.service_sid});
+          console.log(notify);
+          newuser.notify_name = notify.friendlyName;
+          newuser.notify_sid = notify.sid;
+        }
+      }
+      console.log(newuser);
       const createdUser = await this.userRepository.save(newuser);
       await this.mailService.sendStoreCreation(createdUser.email, createUserDto.password, createdUser.name);
       return createdUser;
     } catch (error) {
       if (error.code === '23505')
         throw new BadRequestException(['email already exists']);
-      throw new ForbiddenException();
+      throw new ForbiddenException(error.message);
     }
   }
   
@@ -118,24 +141,25 @@ export class UserService {
     
   }
 
-  async findOne(id: number, user : User): Promise<User> {
+  async findOne(id: number): Promise<User> {
     try {
-      const ability = this.abilityFactory.defineAbility(user);
+      // const ability = this.abilityFactory.defineAbility(user);
       const userTofind = await this.userRepository.findOneOrFail({
         where: {
           id,
+          // role: UserRole.STORE
         },
         relations: {
           promotions: true,
           customers: true,
         }
       });
-      ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, userTofind);
+      // ForbiddenError.from(ability).throwUnlessCan(Actions.ReadOne, userTofind);
       return userTofind;
     } catch (error) {
-      if (error instanceof ForbiddenError)
-        throw new ForbiddenException(error.message);
-      throw new NotFoundException('user not found');
+      // if (error instanceof ForbiddenError)
+      //   throw new ForbiddenException(error.message);
+      throw new NotFoundException('Store not found');
     }
   }
   
@@ -208,8 +232,15 @@ export class UserService {
     async remove(id: number, user: User) : Promise<User> {
       try {
         const ability = this.abilityFactory.defineAbility(user);
-        const userToremove = await this.findOne(id, user);
+        const userToremove = await this.findOne(id);
         ForbiddenError.from(ability).throwUnlessCan(Actions.Delete, userToremove);
+        const client = new Twilio(this.configService.get('TWILIO_ACCOUNT_SID'), this.configService.get('TWILIO_AUTH_TOKEN'));
+        if (userToremove.notify_sid.length)
+          await client.notify.v1.services(userToremove.notify_sid).remove();
+        if (userToremove.service_sid.length)
+          await client.messaging.v1.services(userToremove.service_sid).remove();
+        if (userToremove.phone.length)
+          await client.incomingPhoneNumbers(userToremove.number_sid).remove();
         return this.userRepository.remove(userToremove);
       } catch (error) {
         throw new ForbiddenException(error.message)

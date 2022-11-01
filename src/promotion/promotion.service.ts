@@ -39,7 +39,8 @@ export class PromotionService {
         }
       });
       if (customers.length) {
-        const service = this.twilioService.client.notify.services(this.configService.get('TWILIO_NOTIFY_SID'));
+        const service = this.twilioService.client.notify.services(user.notify_sid);
+        console.log(user.notify_sid);
         const bindings = customers.map(customer => {
           return JSON.stringify({ binding_type: 'sms', address: customer.phone });
         });

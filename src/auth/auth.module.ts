@@ -5,10 +5,18 @@ import { jwtModule } from './jwtModule';
 import { UserModule } from 'src/user/user.module';
 import { JWTStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TwilioModule } from 'nestjs-twilio';
 
 @Module({
-  imports: [jwtModule, ConfigModule, UserModule],
+  imports: [jwtModule, ConfigModule, UserModule, TwilioModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (cfg: ConfigService) => ({
+      accountSid: cfg.get('TWILIO_ACCOUNT_SID'),
+      authToken: cfg.get('TWILIO_AUTH_TOKEN'),
+    }),
+  })],
   providers: [AuthService, JWTStrategy, LocalStrategy],
   controllers: [AuthController],
   exports: [AuthService],

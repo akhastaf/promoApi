@@ -7,8 +7,8 @@ export class LoginUserDto {
     @IsNotEmpty()
     username: string;
     @ApiProperty()
-    // @IsString()
-    // @IsNotEmpty()
+    @IsString()
+    @IsNotEmpty()
     // @Min(8)
     // @Max(20)
     // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})

@@ -55,6 +55,18 @@ export class User {
     isActive: boolean;
     @Column({ default: 0 })
     count: number;
+    @Column({ nullable: true })
+    number_twilio: string;
+    @Column({ nullable: true })
+    number_sid: string;
+    @Column({ nullable: true })
+    service_name: string;
+    @Column({ nullable: true })
+    service_sid: string;
+    @Column({ nullable: true })
+    notify_name: string;
+    @Column({ nullable: true })
+    notify_sid: string;
     @OneToMany(() => Promotion, (promotion) => promotion.user, { onDelete: 'SET NULL' })
     promotions?: Promotion[];
     @OneToMany(() => Customer, (customer) => customer.store, { onDelete: 'SET NULL' })

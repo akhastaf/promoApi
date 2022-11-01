@@ -21,7 +21,7 @@ import { Response } from 'express';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(JWTGuard)
+
 @UseGuards(LogGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('api/users')
@@ -68,6 +68,7 @@ export class UserController {
     }
   })
   @ApiConsumes('multipart/form-data')
+  @UseGuards(JWTGuard)
   @Post()
   @UseInterceptors(FileInterceptor('avatar'))
   create(@Req() req: RequestWithAuth,
@@ -107,6 +108,7 @@ export class UserController {
     }
   })
   @ApiConsumes('multipart/form-data')
+  @UseGuards(JWTGuard)
   @Patch('me')
   @UseInterceptors(FileInterceptor('avatar'))
   updateMe(@Req() req: RequestWithAuth ,
@@ -116,15 +118,20 @@ export class UserController {
       upadateMeDto.avatar = avatar;
     return this.userService.updateMe(req.user, upadateMeDto);
   }
+
+  @UseGuards(JWTGuard)
   @Patch('me/security')
   updateMeSecurity(@Req() req: RequestWithAuth ,
         @Body() updateMeDto: UpdateMeSecurityDto) {
     return this.userService.updateMeSecurity(req.user, updateMeDto);
   }
+
+  @UseGuards(JWTGuard)
   @Get('me')
   me(@Req() req: RequestWithAuth) {
     return this.userService.me(req.user);
   }
+  @UseGuards(JWTGuard)
   @Get('qr')
   async getQr(@Req() req: RequestWithAuth, @Res() res: Response) {
     if (req.user.role != UserRole.STORE)
@@ -138,6 +145,7 @@ export class UserController {
     res.end(doc)
   }
 
+  @UseGuards(JWTGuard)
   @Get()
   findAll(@Req() req: RequestWithAuth,
       @Query('order') order: string,
@@ -150,9 +158,10 @@ export class UserController {
     return this.userService.findAll(req.user, { limit, page }, role, order);
   }
   
+  // @UseGuards(JWTGuard)
   @Get(':id')
   findOne(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(id, req.user);
+    return this.userService.findOne(id);
   }
   
   @ApiBody({
@@ -183,6 +192,7 @@ export class UserController {
     }
   })
   @ApiConsumes('multipart/form-data')
+  @UseGuards(JWTGuard)
   @Patch(':id')
   @UseInterceptors(FileInterceptor('avatar'))
   update(@Req() req: RequestWithAuth ,
@@ -194,7 +204,7 @@ export class UserController {
     return this.userService.update(id, updateUserDto, req.user);
   }
   
-  
+  @UseGuards(JWTGuard)
   @Delete(':id')
   remove(@Req() req: RequestWithAuth ,@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id, req.user);

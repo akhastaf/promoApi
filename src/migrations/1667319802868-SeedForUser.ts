@@ -2,7 +2,7 @@ import { User } from "src/user/entities/user.entity";
 import { MigrationInterface, QueryRunner } from "typeorm"
 import { Admin } from "./seeds/Admin";
 
-export class SeedForUsers1666655821430 implements MigrationInterface {
+export class SeedForUser1667319802868 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         const admin = queryRunner.manager.getRepository(User).create(Admin);

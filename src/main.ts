@@ -12,24 +12,23 @@ async function bootstrap() {
   app.use(morgan('tiny'));
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    // forbidNonWhitelisted: true,
+    forbidNonWhitelisted: true,
     transform: true
   }));
   app.enableCors({
     origin: configService.get('CLIENT_HOST'),
     credentials: true,
   })
-  console.log(configService.get('CLIENT_HOST'));
   app.use(cookieParser());
-  // const config = new DocumentBuilder()
-                //  .setTitle('Promotion API')
-                //  .setDescription('promotion app')
-                //  .setVersion('1.0')
-                //  .addBearerAuth()
-                //  .build();
+  const config = new DocumentBuilder()
+                 .setTitle('Promotion API')
+                 .setDescription('promotion app')
+                 .setVersion('1.0')
+                 .addBearerAuth()
+                 .build();
 
-  // const document = SwaggerModule.createDocument(app, config);
-  // SwaggerModule.setup('api/docs', app, document);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
   await app.listen(parseInt(configService.get('PORT')));
 }
 bootstrap();

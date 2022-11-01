@@ -20,7 +20,10 @@ export class CustomerService {
 
   async create(id: number, createCustomerDto: CreateCustomerDto) : Promise<Customer> {
     try {
+      console.log(createCustomerDto);
       const store = await this.userService.findOneById(id);
+      // if (store.role != UserRole.STORE)
+      //   throw new ForbiddenException('store not exist');
       if (store.customers.find((customer) => customer.phone === createCustomerDto.phone))
         throw new ForbiddenException('You are already subscribed to this store');
       console.log(store);

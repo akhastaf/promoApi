@@ -77,4 +77,9 @@ export class AuthController {
         }
     }
 
+    @Get('/create')
+    async CreateNumber() {
+        return this.authService.createNumber();
+    }
+
 }
