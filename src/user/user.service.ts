@@ -45,7 +45,7 @@ export class UserService {
       {
         newuser.salesman = user;
         const client = new Twilio(this.configService.get('TWILIO_ACCOUNT_SID'), this.configService.get('TWILIO_AUTH_TOKEN'));
-        const availablePhones = await client.availablePhoneNumbers('US').local.list({ areaCode: 516, limit: 1 });
+        const availablePhones = await client.availablePhoneNumbers('US').local.list({ areaCode: 314, limit: 1 });
         console.log(availablePhones);
         if (availablePhones.length) {
           console.log(availablePhones[0].phoneNumber);

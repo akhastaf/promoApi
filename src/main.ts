@@ -12,7 +12,7 @@ async function bootstrap() {
   app.use(morgan('tiny'));
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    forbidNonWhitelisted: true,
+    // forbidNonWhitelisted: true,
     transform: true
   }));
   app.enableCors({
