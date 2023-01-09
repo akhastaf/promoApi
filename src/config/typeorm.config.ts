@@ -1,6 +1,8 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { DataSourceOptions } from "typeorm";
+import * as dotenv from "dotenv";
+dotenv.config({ path: __dirname+'/../../.env' });
 
 export const typeOrmAsyncConfig : TypeOrmModuleAsyncOptions = {
     imports: [ConfigModule],
@@ -10,9 +12,9 @@ export const typeOrmAsyncConfig : TypeOrmModuleAsyncOptions = {
             type: 'postgres',
             host: process.env.DB_HOST,
             port: parseInt(process.env.DB_PORT),
-            username: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+            username: process.env.POSTGRES_USER,
+            password: process.env.POSTGRES_PASSWORD,
+            database: process.env.POSTGRES_DB,
             autoLoadEntities: true,
             entities: [__dirname + '/../**/*.entity{.ts,.js}'],
             migrations: [__dirname + '/../migrations/*{.ts,.js}'],
@@ -25,11 +27,11 @@ export const typeOrmAsyncConfig : TypeOrmModuleAsyncOptions = {
 
 export const typeOrmConfig : DataSourceOptions = {
     type: "postgres",
-    host: "localhost",//process.env.DB_HOST,
-    port: 5432,//parseInt(process.env.DB_PORT),
-    username: "postgres",//process.env.DB_USER,
-    password: "postgres",//process.env.DB_PASSWORD,
-    database: "promotion_app",//process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT),
+    username: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
     synchronize: false,

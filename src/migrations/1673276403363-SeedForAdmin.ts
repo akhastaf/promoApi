@@ -2,7 +2,7 @@ import { User } from "src/user/entities/user.entity";
 import { MigrationInterface, QueryRunner } from "typeorm"
 import { Admin } from "./seeds/Admin";
 
-export class SeedForUser1667319802868 implements MigrationInterface {
+export class SeedForAdmin1673276403363 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         const admin = queryRunner.manager.getRepository(User).create(Admin);
@@ -10,7 +10,16 @@ export class SeedForUser1667319802868 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        //await queryRunner.manager.getRepository(User).clear();
+        try {
+            const admin = await queryRunner.manager.getRepository(User).findOneOrFail({
+                where: {
+                    email: Admin.email
+                }
+            });
+            await queryRunner.manager.getRepository(User).remove(admin);
+        } catch (error) {
+            console.log(error);   
+        }
     }
 
 }

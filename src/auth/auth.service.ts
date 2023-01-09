@@ -36,7 +36,7 @@ export class AuthService {
         const {password, token, ...user1} = user; 
         return { user: user1, access_token: this.jwtService.sign(payload),
                 refresh_token: this.jwtService.sign(payload, {
-                    secret: this.configService.get('JWT_SECRET'),
+                    secret: this.configService.get('JWT_REFRESH_SECRET'),
                     expiresIn: '90d'
                 })};
     }
@@ -44,7 +44,7 @@ export class AuthService {
     async getAccess_token(refrsh_token: string) {
         try {
             const payload: Payload = await this.jwtService.verifyAsync(refrsh_token, {
-                secret: this.configService.get('JWT_SECRET'),
+                secret: this.configService.get('JWT_REFRESH_SECRET'),
                 ignoreExpiration: false
             });
             const user = await this.userService.findOneByEmail(payload.email);

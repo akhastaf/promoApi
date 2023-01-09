@@ -28,7 +28,7 @@ export class User {
     @Column()
     @Exclude()
     password: string;
-    @Column({ default: 'public/default.png',transformer: {
+    @Column({ default: 'public/avatar.png',transformer: {
         from: img => `${process.env.HOST}/${img}`,
         to: img => img
     }})

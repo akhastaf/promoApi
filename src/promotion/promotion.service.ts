@@ -8,6 +8,7 @@ import { Actions, AppAbility, CaslAbilityFactory } from 'src/casl/casl-ability.f
 import { Customer } from 'src/customer/entities/customer.entity';
 import { User, UserRole } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
+import { NotificationListInstanceCreateOptions } from 'twilio/lib/rest/notify/v1/service/notification';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -24,7 +25,7 @@ export class PromotionService {
       @InjectRepository(Customer) private customerRepo: Repository<Customer>,) {}
   
   
-      async create(createPromotionDto: CreatePromotionDto, user: User) {
+  async create(createPromotionDto: CreatePromotionDto, user: User) {
     try {
       const ability = this.abilityFactory.defineAbility(user);
       ForbiddenError.from(ability).throwUnlessCan(Actions.Create, Promotion);
@@ -44,19 +45,41 @@ export class PromotionService {
         const bindings = customers.map(customer => {
           return JSON.stringify({ binding_type: 'sms', address: customer.phone });
         });
-        let not;
-        service.notifications
-          .create({
-            toBinding: bindings,
-            body:  `${promotion.title} ${promotion.description}`,
+        for (const customer of customers) {
+          const sms = {
+              body: `${promotion.title} ${promotion.description}`,
+              from: user.number_twilio,
+              to: customer.phone,
+              mediaUrl: promotion.image,
+          };
+          console.log("sms ", sms);
+          this.twilioService.client.messages.create({
+            body: `${promotion.title} ${promotion.description}`,
+            from: user.number_twilio,
+            to: customer.phone,
+            mediaUrl: promotion.image,
+          }).then(message => {
+            console.log('SMS successfully sent');
+            console.log(message.sid);
+          }).catch(error => {
+            console.error('message ', error);
           })
-          .then(async (notification) => {
-            await this.userService.updateCount(user, bindings.length);
-          })
-          .catch(err => {
-            console.error(err);
-          });
-          return not;
+        }
+        // let not;
+        // let t: NotificationListInstanceCreateOptions;
+        // service.notifications
+        //   .create({
+        //     toBinding: bindings,
+        //     body:  `${promotion.title} ${promotion.description}`,
+            
+        //   })
+        //   .then(async (notification) => {
+        //     await this.userService.updateCount(user, bindings.length);
+        //   })
+        //   .catch(err => {
+        //     console.error(err);
+        //   });
+        //   return not;
       }
       return promotion;
     } catch (error) {

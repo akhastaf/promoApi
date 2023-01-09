@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length } from "class-validator";
 import { Match } from "src/user/decorators/match.decorator";
 import { UserRole } from "src/user/entities/user.entity";
 
@@ -16,16 +16,14 @@ export class RegisterCustomerDto {
     phone: string;
     @ApiProperty()
     @IsString()
-    // @IsNotEmpty()
-    // @Min(8)
-    // @Max(20)
+    @IsNotEmpty()
+    @Length(8, 20)
     // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
     password: string;
     @ApiProperty()
     @IsString()
-    // @IsNotEmpty()
-    // @Min(8)
-    // @Max(20)
+    @IsNotEmpty()
+    @Length(8, 20)
     @Match("password", {message: 'repeat password must be idenitcal to password'})
     password_confirmation: string;
 }

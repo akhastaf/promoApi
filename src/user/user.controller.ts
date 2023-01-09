@@ -71,10 +71,9 @@ export class UserController {
   @UseGuards(JWTGuard)
   @Post()
   @UseInterceptors(FileInterceptor('avatar'))
-  create(@Req() req: RequestWithAuth,
-  @UploadedFile(SharpPipe) avatar: string,
-  @Body() createUserDto: CreateUserDto,
-  @I18n() i18n: I18nContext) {
+  create(@Req() req: RequestWithAuth, @UploadedFile(SharpPipe) avatar: string, @Body() createUserDto: CreateUserDto,
+    @I18n() i18n: I18nContext)
+  {
     if (avatar)
       createUserDto.avatar = avatar;
     return this.userService.create(createUserDto, req.user, i18n);
